@@ -728,9 +728,9 @@ void FDN::setTempPoints(){
         }
     }
     
-    for (int i = 0; i<CHANNELS; i++){
-        printf("For angle: %f tempoints x : %f tempoints y: %f \n", channelToAngle(i), tempPoints[i].x, tempPoints[i].y);
-    }
+//    for (int i = 0; i<CHANNELS; i++){
+//        printf("For angle: %f tempoints x : %f tempoints y: %f \n", channelToAngle(i), tempPoints[i].x, tempPoints[i].y);
+//    }
     
 
 }
