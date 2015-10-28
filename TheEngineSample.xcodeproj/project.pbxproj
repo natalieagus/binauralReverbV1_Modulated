@@ -12,6 +12,7 @@
 		2C581E431BBD8076002C6BA4 /* piano.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2C581E421BBD8076002C6BA4 /* piano.mp3 */; };
 		2C581E471BBD830A002C6BA4 /* guitar.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2C581E461BBD830A002C6BA4 /* guitar.mp3 */; };
 		2C581E491BBD8447002C6BA4 /* allofthestars.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2C581E481BBD8447002C6BA4 /* allofthestars.mp3 */; };
+		2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */; settings = {ASSET_TAGS = (); }; };
 		2CE69B8B1BC5068100072C04 /* SingleTapDelay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE69B891BC5068100072C04 /* SingleTapDelay.cpp */; };
 		2CE69B941BCCE35F00072C04 /* person.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B931BCCE35F00072C04 /* person.png */; };
 		2CE69B9A1BCCE50300072C04 /* Speaker.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B991BCCE50300072C04 /* Speaker.png */; };
@@ -82,6 +83,8 @@
 		2C581E421BBD8076002C6BA4 /* piano.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = piano.mp3; sourceTree = "<group>"; };
 		2C581E461BBD830A002C6BA4 /* guitar.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = guitar.mp3; sourceTree = "<group>"; };
 		2C581E481BBD8447002C6BA4 /* allofthestars.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = allofthestars.mp3; sourceTree = "<group>"; };
+		2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parameter.cpp; sourceTree = "<group>"; };
+		2C7CD63B1BE0C920000F26E2 /* Parameter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Parameter.hpp; sourceTree = "<group>"; };
 		2CE69B891BC5068100072C04 /* SingleTapDelay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SingleTapDelay.cpp; sourceTree = "<group>"; };
 		2CE69B8A1BC5068100072C04 /* SingleTapDelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SingleTapDelay.h; sourceTree = "<group>"; };
 		2CE69B931BCCE35F00072C04 /* person.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = person.png; sourceTree = "<group>"; };
@@ -190,6 +193,10 @@
 				3A9464261BA6BB1F00818778 /* QuadraturePhaseEnvelopeFollower.h */,
 				2C2707DF1BDF31C900EFD5CD /* DoubleBufferedReverb.cpp */,
 				2C2707E01BDF31C900EFD5CD /* DoubleBufferedReverb.h */,
+				3A8EFDE71BE0850E00EBA82D /* Point2d.cpp */,
+				3A8EFDE81BE0850E00EBA82D /* Point2d.hpp */,
+				2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */,
+				2C7CD63B1BE0C920000F26E2 /* Parameter.hpp */,
 			);
 			name = AudioProcessing;
 			sourceTree = "<group>";
@@ -266,8 +273,6 @@
 				4C0C24921599FADD00D23E13 /* InfoPlist.strings */,
 				4C0C24951599FADD00D23E13 /* main.m */,
 				4C0C24971599FADD00D23E13 /* TheEngineSample-Prefix.pch */,
-				3A8EFDE71BE0850E00EBA82D /* Point2d.cpp */,
-				3A8EFDE81BE0850E00EBA82D /* Point2d.hpp */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -440,6 +445,7 @@
 				2C2707E11BDF31C900EFD5CD /* DoubleBufferedReverb.cpp in Sources */,
 				4C7C681116F1609800721E60 /* TPCircularBuffer.c in Sources */,
 				2CE69B8B1BC5068100072C04 /* SingleTapDelay.cpp in Sources */,
+				2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
