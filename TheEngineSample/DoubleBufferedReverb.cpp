@@ -7,6 +7,7 @@
 //
 
 #include "DoubleBufferedReverb.h"
+
 using namespace std;
 
 DoubleBufferedReverb::DoubleBufferedReverb(void)
@@ -71,7 +72,7 @@ void DoubleBufferedReverb::setListenerLocation(float* loc){
     Point2d Ratio = Point2d(loc[0],1.0f-loc[1]);
     this->parameters.setListenerLocation(Ratio);
     updateReverbSettings();
-    sleep(1);
+    usleep(200000);
     flip();
 
 }
@@ -80,28 +81,28 @@ void DoubleBufferedReverb::setSoundLocation(float* loc){
     Point2d Ratio = Point2d(loc[0],1.0f-loc[1]);
     this->parameters.setSoundLocation(Ratio);
     updateReverbSettings();
-    sleep(1);
+    usleep(200000);
     flip();
 }
 
 void DoubleBufferedReverb::setRoomSize(float size){
     parameters.setRoomSize(size);
     updateReverbSettings();
-    sleep(1);
+    usleep(200000);
     flip();
 }
 
 void DoubleBufferedReverb::setWidthRatio(float widthRatio){
     this->parameters.setWidthRatio(widthRatio);
     updateReverbSettings();
-    sleep(1);
+    usleep(200000);
     flip();
 }
 
 void DoubleBufferedReverb::setRT60(float RT60){
     this->parameters.RT60 = RT60;
     updateReverbSettings();
-    sleep(1);
+    usleep(200000);
     flip();
 }
 

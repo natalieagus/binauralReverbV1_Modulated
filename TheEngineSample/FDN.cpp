@@ -502,40 +502,35 @@ inline int FDN::getRandom(){
 inline void FDN::setRoomBouncePoints(){
     std::random_device rd;     // only used once to initialise (seed) engine
     std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-    std::uniform_int_distribution<int> uni(0,parametersFDN.roomWidthCM); // guaranteed unbiased
+    std::uniform_int_distribution<int> uniW(0,parametersFDN.roomWidthCM); // guaranteed unbiased
     std::uniform_int_distribution<int> uniH(0,parametersFDN.roomHeightCM);
     
-    for (int i = 0; i<NUMTAPSSTD ; i++){
-        //Decide on leftright / topdown wall (fix x or y)
-        int r = getRandom();
-        if (r == 0){
-            int r2 = getRandom();
-            //fixing x, leftright wall
-            if (r2 == 0){
-                //left wall (x = 0)
-                int random_integer = uniH(rng);
-                roomBouncePoints[i] = Point2d(0.0f, random_integer);
-            }
-            else{
-                //right wall (x = roomWidthCM)
-                int random_integer = uniH(rng);
-                roomBouncePoints[i] = Point2d(parametersFDN.roomWidthCM,random_integer);
-            }
-        }
-        else{
-            //fixing y, topdown wall
-            int r2 = getRandom();
-            if (r2 == 0){
-                //top wall (y = roomwidthCM)
-                int random_integer = uni(rng);
-                roomBouncePoints[i] = Point2d(random_integer,parametersFDN.roomHeightCM);
-            }
-            else{
-                //down wall (y = 0)
-                int random_integer = uni(rng);
-                roomBouncePoints[i] = Point2d(random_integer,0.0f);
-            }
-        }
+    for (int i = 0; i<NUMTAPSSTD; i++){
+        float x = (float) uniW(rng);
+        float y = (float) uniH(rng);
+        
+        roomBouncePoints[i] = Point2d(x,y);
+    }
+    
+    
+    int numPointsLeftWall = numTaps*parametersFDN.roomWidthCM/(parametersFDN.roomWidthCM+parametersFDN.roomHeightCM)/2;
+    int numPointsRightWall = numPointsLeftWall;
+    int numPointsFrontWall = (numTaps- (numPointsLeftWall*2))/2;
+    int numPointsBackWall = numTaps - (numPointsFrontWall + numPointsLeftWall + numPointsRightWall);
+    
+    for (int i = 0; i < numPointsLeftWall; i++){
+        roomBouncePoints[i].x = 0.0f;
+    }
+    
+    for(int i = numPointsLeftWall; i< numPointsLeftWall+numPointsRightWall; i++){
+        roomBouncePoints[i].x =parametersFDN.roomWidthCM;
+    }
+    for (int i = numPointsLeftWall+numPointsRightWall; i< numPointsLeftWall+numPointsRightWall+numPointsFrontWall; i++){
+        roomBouncePoints[i].y = parametersFDN.roomHeightCM;
+    }
+    
+    for (int i = numPointsFrontWall+numPointsLeftWall+numPointsRightWall; i<numTaps; i++){
+        roomBouncePoints[i].y = 0;
     }
 }
 
