@@ -55,7 +55,7 @@ protected:
     float directMix, reverbMix;
     
     void setTempPoints();
-    float tempPoints[CHANNELS*2]; //change to Point2d
+    Point2d tempPoints[CHANNELS];
     void calculateAdditionalDelays();
     float additionalDelays[8];
     SingleTapDelay reverbDelays[8];

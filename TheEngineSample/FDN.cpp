@@ -498,7 +498,7 @@ inline int FDN::getRandom(){
     return r;
 }
 
-//Fix this
+
 inline void FDN::setRoomBouncePoints(){
     std::random_device rd;     // only used once to initialise (seed) engine
     std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
@@ -516,7 +516,7 @@ inline void FDN::setRoomBouncePoints(){
     int numPointsLeftWall = numTaps*parametersFDN.roomWidthCM/(parametersFDN.roomWidthCM+parametersFDN.roomHeightCM)/2;
     int numPointsRightWall = numPointsLeftWall;
     int numPointsFrontWall = (numTaps- (numPointsLeftWall*2))/2;
-    int numPointsBackWall = numTaps - (numPointsFrontWall + numPointsLeftWall + numPointsRightWall);
+   // int numPointsBackWall = numTaps - (numPointsFrontWall + numPointsLeftWall + numPointsRightWall);
     
     for (int i = 0; i < numPointsLeftWall; i++){
         roomBouncePoints[i].x = 0.0f;
@@ -682,125 +682,57 @@ void FDN::setSingleTapDelay(){
     directRays[1].setTimeSafe(directDelayTimes[1]);
 }
 
+
 //Simplify this
 void FDN::setTempPoints(){
-   // printf("Lis loc %f %f sound loc %f %f roomwidth %f room length %f\n", listenerLoc[0], listenerLoc[1], soundSourceLoc[0], soundSourceLoc[1], roomWidthCM, roomHeightCM);
-    for (int i = 0; i < CHANNELS ; i++){
-     //   printf("Channel # %d \n", i);
+    
+    float yBot = 0.0f-parametersFDN.listenerLoc.y;
+    float yTop = parametersFDN.roomHeightCM - parametersFDN.listenerLoc.y;
+    float xLeft = 0.0f - parametersFDN.listenerLoc.x;
+    float xRight = parametersFDN.roomWidthCM - parametersFDN.listenerLoc.x;
+    
+    float w =parametersFDN.listenerLoc.x;
+    float h = parametersFDN.listenerLoc.y;
+
+    for (int i = 0; i < CHANNELS/2; i++){
         float angle = channelToAngle(i);
-       // printf("Initial angle is: %f \n", angle);
-        Point2d point;
-        if (angle < 0.0f and i >= (3*CHANNELS/4)){
-         //   printf ("front left ears \n");
-            //for front left ears
-            angle = 90.0f - (angle);
-            
-            //find intersection with y = h
-//            float v1[2] = {listenerLoc[0], listenerLoc[1] - roomHeightCM};
-//            float v2[2] = {listenerLoc[0], 0.0f};
-//            float v3[2] = {-sin(angle * M_PI / 180.f), cos(angle* M_PI / 180.f)};
-            Point2d v1 = Point2d(parametersFDN.listenerLoc.x,parametersFDN.listenerLoc.y-parametersFDN.roomHeightCM);
-            Point2d v2 = Point2d(parametersFDN.listenerLoc.x,0.0f);
-            Point2d v3 = Point2d(-sin(angle * M_PI / 180.f),cos(angle* M_PI / 180.f));
-         //   printf("v3: %f %f %f \n", v3[0], v3[1], angle);
-            float t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-            
-            if (t2 > 1.0f or t2 < 0.0f){
-                //find intersection with x = 0
-//                v1[1] = listenerLoc[1];
-//                v2[1] = roomHeightCM; v2[0] = 0.0f;
-                v1.y = parametersFDN.listenerLoc.y;
-                v2 = Point2d(0.0f,parametersFDN.roomHeightCM);
-                
-                t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-                point = Point2d(0.0f,parametersFDN.roomHeightCM * t2);
+        float m = 1.0f/tan(angle * M_PI / 180.f);
+        //y = mx + 0
+        Point2d pointArray[4] = {Point2d(yBot/m, yBot),
+                                Point2d(yTop/m, yTop),
+                                Point2d(xLeft, m*xLeft),
+                                Point2d(xRight, m*xRight)};
+        
+        for (int j = 0; j< 4; j++){
+            float xO = pointArray[j].x + parametersFDN.listenerLoc.x;
+            if (xO > parametersFDN.roomWidthCM or xO < 0.0f){
+                pointArray[j].mark = false;
+                continue;
             }
-            else{
-//                point[0] = listenerLoc[0] * t2; point[1] = roomHeightCM;
-                point = Point2d(parametersFDN.listenerLoc.x * t2,parametersFDN.roomHeightCM);
+            float yO = pointArray[j].y + parametersFDN.listenerLoc.y;
+            if (yO > parametersFDN.roomHeightCM or yO < 0.0f){
+                pointArray[j].mark = false;
+                continue;
+            }
+            if (pointArray[j].mark == true){
+                //check for x value
+                if (pointArray[j].x >= 0){
+                    tempPoints[i].x = pointArray[j].x + w;
+                    tempPoints[i].y = pointArray[j].y + h;
+                }
+                else{
+                    tempPoints[i+CHANNELS/2].x = pointArray[j].x + w;
+                    tempPoints[i+CHANNELS/2].y = pointArray[j].y + h;
+                }
             }
         }
-        
-        else if (angle<0.f and i >= CHANNELS/2 and i < 3*CHANNELS/4){
-            angle = 90.0f - (angle);
-            //for back left ears
-            //  printf ("back left ears \n");
-            //find intersection with x = 0
-            Point2d v1 = parametersFDN.listenerLoc;
-            Point2d v2 = Point2d(0.0f, parametersFDN.roomHeightCM);
-            Point2d v3 = Point2d(-sin(angle* M_PI / 180.f), cos(angle* M_PI / 180.f));
-         //     printf("v3: %f %f %f \n", v3[0], v3[1], angle);
-            float t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-            
-            if (t2 > 1.0f or t2 < 0.0f){
-                //find intersection with y = 0
-                v2 = Point2d(parametersFDN.listenerLoc.x,0.0f);
-                t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-                point = Point2d(parametersFDN.listenerLoc.x * t2, 0.0f);
-            }
-            else{
-                point = Point2d(0.0f, parametersFDN.roomHeightCM*t2);
-            }
-        }
-        
-        else if (angle >= 0.f and i < CHANNELS/4){
-            //for right front ears
-            angle = 90.f - angle;
-           //   printf ("front right ears \n");
-            //find intersection with y = h
-            Point2d v1 = Point2d(parametersFDN.listenerLoc.x, parametersFDN.listenerLoc.y- parametersFDN.roomHeightCM);
-            Point2d v2 = Point2d(parametersFDN.roomWidthCM, 0);
-            Point2d v3 = Point2d(-sin(angle* M_PI / 180.f),cos(angle* M_PI / 180.f));
-            
-         //   printf("v3: %f %f %f \n", v3[0], v3[1], angle);
-            float t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-         //   printf("initial t: %f \n ", t2);
-            if (t2 > 1.0f or t2 < 0.0f){
-                //find intersection with x = width
-                v1.x = parametersFDN.listenerLoc.x - parametersFDN.roomWidthCM; v1.y = parametersFDN.listenerLoc.y;
-                v2.x = 0.0f; v2.y = parametersFDN.roomHeightCM;
-                
-                t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-            //    printf("%f %f %f %f %f %f \n", v1[0], v1[1], v2[0], v2[1], dotProduct(v1, v3), dotProduct(v2, v3));
-                point = Point2d(parametersFDN.roomWidthCM, t2*parametersFDN.roomHeightCM);
-            }
-            else{
-                point = Point2d(parametersFDN.roomWidthCM*t2, parametersFDN.roomHeightCM);
-               
-            }
-         //   printf("T: %f\n", t2);
-        }
-        
-        else if (angle >= 0.f and i >= CHANNELS/4 and i < CHANNELS /2){
-          //    printf ("back right ears \n");
-            angle = 90.f - angle;
-            //for right back ears
-            //find intersection with x = w
-            Point2d v1 = Point2d(parametersFDN.listenerLoc.x - parametersFDN.roomWidthCM, parametersFDN.listenerLoc.y);
-            Point2d v2 = Point2d(0.0f, parametersFDN.roomHeightCM);
-            Point2d v3 = Point2d(-sin(angle* M_PI / 180.f), cos(angle* M_PI / 180.f));
-       //     printf("v3: %f %f %f \n", v3[0], v3[1], angle);
-            float t2 = v1.dotProduct(v3)/ v2.dotProduct(v3);
-            
-            if (t2 > 1.0f or t2 < 0.0f){
-                //find intersection with y = 0
-                v1.x = parametersFDN.listenerLoc.x; v1.y = parametersFDN.listenerLoc.y;
-                v2.x = parametersFDN.roomWidthCM; v2.y = 0.0f;
-                
-                t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-                point = Point2d(parametersFDN.roomWidthCM*t2, 0.0f);
-            }
-            else{
-                point = Point2d(parametersFDN.roomWidthCM, parametersFDN.roomWidthCM*t2);
-            }
-        }
-        
-    //    printf("For angle: %f, intersection at %f %f\n", angle, point[0], point[1]);
-        
-        tempPoints[i*2] = point.x;
-        tempPoints[i*2+1] = point.y;
-     //   printf( " ==========\n");
     }
+    
+    for (int i = 0; i<CHANNELS; i++){
+        printf("For angle: %f tempoints x : %f tempoints y: %f \n", channelToAngle(i), tempPoints[i].x, tempPoints[i].y);
+    }
+    
+
 }
 
 void FDN::calculateAdditionalDelays(){
@@ -808,12 +740,12 @@ void FDN::calculateAdditionalDelays(){
     {
         if (i < CHANNELS/2){ //CHANNEL 0 -3 FOR RIGHT EAR
              //near to right use temp0,leftear- temp0,rightear, 0 to 3, FOR LEFT EAR
-            float d = (getDistance(tempPoints[i*2], tempPoints[i*2+1], parametersFDN.listenerLocLeftEar.x, parametersFDN.listenerLocLeftEar.y) - getDistance(tempPoints[i*2], tempPoints[i*2+1], parametersFDN.listenerLocRightEar.x, parametersFDN.listenerLocRightEar.y) ) * CENTIMETRESTOMETRES / SOUNDSPEED;
+            float d = (tempPoints[i].distance(parametersFDN.listenerLocLeftEar) - tempPoints[i].distance(parametersFDN.listenerLocRightEar)) * CENTIMETRESTOMETRES / SOUNDSPEED;
             additionalDelays[i] = d;
         }
         else{ //CHANNEL 4-7 FOR LEFT EAR
               //near to left use temp4,rightear - temp4,leftear, 4 to 7, FOR RIGHT EAR
-           float d = (getDistance(tempPoints[i*2], tempPoints[i*2+1], parametersFDN.listenerLocRightEar.x, parametersFDN.listenerLocRightEar.y) - getDistance(tempPoints[i*2], tempPoints[i*2+1], parametersFDN.listenerLocLeftEar.x, parametersFDN.listenerLocLeftEar.y) ) * CENTIMETRESTOMETRES / SOUNDSPEED;
+            float d = (tempPoints[i].distance(parametersFDN.listenerLocRightEar) - tempPoints[i].distance(parametersFDN.listenerLocLeftEar)) * CENTIMETRESTOMETRES / SOUNDSPEED;
             additionalDelays[i] = d;
         }
         reverbDelays[i].setTimeSafe(additionalDelays[i]);
