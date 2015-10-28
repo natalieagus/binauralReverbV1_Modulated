@@ -20,12 +20,12 @@ FDN: a feedback delay network reverberator
 #define CENTIMETRESTOMETRES 0.01f
 #define CENTIMETRESTOMETRESSQ CENTIMETRESTOMETRES*CENTIMETRESTOMETRES
 #define CHANNELS 8
-#define ROOMSIZE 3000 //30 metres max
-#define RADIUSOFHEAD 8 //8cm radius of head
+
 #import <Accelerate/Accelerate.h>
 #import "FirstOrderFilter.h"
 #import "SingleTapDelay.h"
 #import "Point2d.hpp"
+#import "Parameter.hpp"
 
 class FDN
 {
@@ -38,74 +38,32 @@ public:
     // processes a buffer with numFrames samples.  mono in, stereo out.
     void processIFretlessBuffer(float* input, size_t numFrames, float* outputL, float* outputR );
 
-    //To set all the settable variable in FDN from UI
-    // size must be between 1 and 10, unit in metres
-    void setRoomSize(float size);
-    void setWidthRatio(float size);
-    void setListenerLoc(Point2d loc);
-    void setSoundSourceLoc(Point2d loc);
-    // tone must be between 0 and 1;  1 is no high frequency attenuation.  0 is max attenuation
-    void setRT60(float RT60);
-
-    bool listenerLocationChanged;
-    bool soundLocationChanged;
-    bool RT60Changed;
-    bool roomSizeChanged;
-    bool widthRatioChanged;
-    
+    void setParameter(Parameter params);
+    bool parameterNeedsUpdate;
 
 protected:
     
+    Parameter parametersFDN;
+    Parameter newParametersFDN;
+    void setParameterSafe(Parameter params);
 
-    float listenerX, listenerY, soundSourceX, soundSourceY;
-    //Locations of listener and sound source, as well as room size (in metres, square)
-    //Assumption: X location is fixed, both sound source and listener are in the middle of the room
-    float roomSizeCM = 500; //min 3 metres, max 10 metres, a square room
-    float roomWidthCM, roomHeightCM;
-    //Take bottom left hand corner of the room as x[0] and y[0]
-    Point2d soundSourceLoc;
-    Point2d listenerLoc;
-    Point2d listenerLocLeftEar;
-    Point2d listenerLocRightEar;
+    
     float directDelayTimes[2]; //unit = FREQ * seconds
     float delayTimesNew[NUMTAPSSTD]; //unit = FREQ * seconds
-    //The location of all bounce points in the room, x and y coordinate
     Point2d roomBouncePoints[NUMTAPSSTD];
-    //Stores the channel of each delay time of the same index
     size_t delayTimesChannel[NUMTAPSSTD];
-   // float directMix = 0.5f; // set this with a UISlider that goes from 0 to 1.
-   // float reverbMix = sqrt(1.0 - directMix*directMix);
     float directMix, reverbMix;
     
     void setTempPoints();
-    float tempPoints[CHANNELS*2];
+    float tempPoints[CHANNELS*2]; //change to Point2d
     void calculateAdditionalDelays();
     float additionalDelays[8];
     SingleTapDelay reverbDelays[8];
     void addReverbDelay(float* fdnLeft, float*fdnRight);
-    
-    float roomCeilingCM = 300.0f; //constant room ceiling of 3 metres tall
-    float directGain = 0.5f; // constant, set by listening (until we can think of a formula for it)
-    float reverbGain = 0.5f; // constant, set by listening
+
     float directDistanceInMetres;
     float roomSA;
-    void recalculateReverDirectMix();
     void setGainConstants();
-    
-    //setting width and height
-    float widthPct = 0.5; //50-50 is square
-    bool widthPctChanged;
-    float widthPctNew = 0.5;
-    void setWidthRatioSafe(float size);
-    
-    //To set listener and sound source locations
-    void setListenerLocSafe(float* loc);
-    void setSoundSourceLocSafe(float* loc);
-    bool listenerNeedsUpdate = false;
-    bool soundSourceNeedsUpdate = false;
-    Point2d soundSourceLocNew;
-    Point2d listenerLocNew;
-    void setListenerOrSoundSourceLocSafe();
 
     //To calculate delays
     //Method to calculate delay times based in randomised 72 points in the room, output to delayTimes[NUMTAPSSTD]
@@ -127,10 +85,6 @@ protected:
     void setSingleTapDelay();
     void processDirectRays(float* input, float* directRaysOutput);
     
-    //To set RT60
-    void setRT60Safe(float RT60);
-    bool RT60NeedsUpdate;
-    float newRT60;
     
     //To do channel angle calculations
     void setDelayChannels();
@@ -238,7 +192,7 @@ protected:
     void setDryLowPassCutoff(float fc);
     void setHighPassCutoff(float fc);
     //void resetEarlyReflections(float erStart, float erEnd);
-    void setRoomSizeSafe(float size); //unit is in CM
+
     void initialise(bool powerSaveMode);
     void randomPermutation(int* a, int length, int channels);
     void randomPermutation2channelGrouped(int* a, int length);

@@ -64,54 +64,45 @@ void DoubleBufferedReverb::processIFretlessBuffer(float* input, size_t numFrames
 }
 
 void DoubleBufferedReverb::updateReverbSettings(){
-    backReverb->setListenerLoc(listenerLocation);
-    backReverb->setSoundSourceLoc(soundLocation);
-    backReverb->setWidthRatio(widthRatio);
-    backReverb->setRT60(RT60);
-    backReverb->setRoomSize(roomSize);
+    backReverb->setParameter(parameters);
 }
 
 void DoubleBufferedReverb::setListenerLocation(float* loc){
-    Point2d L = Point2d(loc[0],loc[1]);
-    this->listenerLocation = L;
-        backReverb->setListenerLoc(listenerLocation);
-    //updateReverbSettings();
+    Point2d Ratio = Point2d(loc[0],1.0f-loc[1]);
+    this->parameters.setListenerLocation(Ratio);
+    updateReverbSettings();
+    sleep(1);
     flip();
-        backReverb->setListenerLoc(listenerLocation);
 
 }
 
 void DoubleBufferedReverb::setSoundLocation(float* loc){
-    Point2d L = Point2d(loc[0],loc[1]);
-    this->soundLocation = L;
-        backReverb->setSoundSourceLoc(soundLocation);
-    //updateReverbSettings();
+    Point2d Ratio = Point2d(loc[0],1.0f-loc[1]);
+    this->parameters.setSoundLocation(Ratio);
+    updateReverbSettings();
+    sleep(1);
     flip();
-        backReverb->setSoundSourceLoc(soundLocation);
 }
 
 void DoubleBufferedReverb::setRoomSize(float size){
-    this->roomSize = size;
-        backReverb->setRoomSize(roomSize);
- //   updateReverbSettings();
+    parameters.setRoomSize(size);
+    updateReverbSettings();
+    sleep(1);
     flip();
-        backReverb->setRoomSize(roomSize);
 }
 
 void DoubleBufferedReverb::setWidthRatio(float widthRatio){
-    this->widthRatio = widthRatio;
-        backReverb->setWidthRatio(widthRatio);
-   // updateReverbSettings();
+    this->parameters.setWidthRatio(widthRatio);
+    updateReverbSettings();
+    sleep(1);
     flip();
-    backReverb->setWidthRatio(widthRatio);
 }
 
 void DoubleBufferedReverb::setRT60(float RT60){
-    this->RT60 = RT60;
-    backReverb->setRT60(RT60);
-   // updateReverbSettings();
+    this->parameters.RT60 = RT60;
+    updateReverbSettings();
+    sleep(1);
     flip();
-    backReverb->setRT60(RT60);
 }
 
 void DoubleBufferedReverb::flip(){

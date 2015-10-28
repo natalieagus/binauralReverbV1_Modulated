@@ -20,78 +20,21 @@ void  FDN::processIFretlessBuffer(float* input, size_t numFrames, float* outputL
     //}
     // return;
     
-    // if there was a call to setRoomSize, safely update and process a frame of zero inputs before continuing
-    if (roomSizeNeedsUpdate) {
-        setRoomSizeSafe(newRoomSize);
-        roomSizeNeedsUpdate = false;
-        
-        // process one frame of zeros.  This prevents a horrible sound caused by a bad update
+    if (parameterNeedsUpdate){
+        setParameterSafe(newParametersFDN);
+        parameterNeedsUpdate = false;
         for (size_t i = 0; i < numFrames; i++){
             processReverb(&zero_f, outputL + i, outputR + i);
         }
-        roomSizeChanged = true;
-    }
-
-    
-    else if (widthPctChanged){
-        printf("widthpctchanged %f\n", widthPctNew);
-        widthPct = widthPctNew;
-        widthPctChanged = false;
-        setRoomSizeSafe(newRoomSize);
-        for (UInt32 i = 0; i < numFrames; i++){
-            processReverb(&zero_f, outputL + i, outputR + i);
-        }
-          widthRatioChanged = true;
-    }
-    
-    else if(RT60NeedsUpdate){
-        setHFDecayMultiplier(8000.0f,1.5f,newRT60);
-        resetTapAttenuation(newRT60);
-        resetReadIndices();
-        RT60NeedsUpdate =false;
-        for (UInt32 i = 0; i < numFrames; i++){
-            processReverb(&zero_f, outputL + i, outputR + i);
-        }
-        
-        RT60Changed = true;
-    }
-    else if(listenerNeedsUpdate){
-
-        listenerLoc = listenerLocNew;
-        listenerLocLeftEar = listenerLocRightEar = listenerLoc;
-        listenerLocLeftEar.x -= RADIUSOFHEAD;
-        listenerLocRightEar.x += RADIUSOFHEAD;
-        
-        setListenerOrSoundSourceLocSafe();
-        listenerNeedsUpdate = false;
-        for (UInt32 i = 0; i < numFrames; i++){
-            processReverb(&zero_f, outputL + i, outputR + i);
-        }
-        
-        listenerLocationChanged = true;
-        
-
-    }
-    else if(soundSourceNeedsUpdate){
-        soundSourceLoc = soundSourceLocNew;
-        setListenerOrSoundSourceLocSafe();
-        soundSourceNeedsUpdate = false;
-        for (UInt32 i = 0; i < numFrames; i++){
-            processReverb(&zero_f, outputL + i, outputR + i);
-        }
-        soundLocationChanged = true;
-        
     }
     
     else {
         if (reverbOn){
-            
-            
             for (UInt32 i = 0; i < numFrames; i++){
                 float* inputPtr = input + i;
                 processReverb(inputPtr, outputL + i, outputR + i);
             }
-        
+
             
         }
         else{
@@ -287,20 +230,15 @@ void FDN::initialise(bool powerSaveMode){
         delayUnits = DELAYUNITSSTD;
         numUncirculatedTaps = UNCIRCULATEDTAPSSTD;
     }
+    
     numTaps = numDelays + numUncirculatedTaps;
  
     tone = 1.0;
     delayBuffers = NULL;
-    newRT60 = 0.4f;
-    roomWidthCM = 450;
-    roomHeightCM = 450;
-    widthPct = 0.5f;
-    listenerX = 0.5f;
-    listenerY = 1.0f/3.0f;
-    soundSourceX = 0.5f;
-    soundSourceY = 2.0f/3.0f;
-    newRoomSize = 450;
-    setRoomSizeSafe(450); //4.5 metres
+    
+    parametersFDN =  Parameter();
+    setParameterSafe(parametersFDN);
+
 }
 
 void FDN::resetReadIndices(){
@@ -499,39 +437,14 @@ double gain(double rt60, double delayLengthInSamples) {
     return pow(M_E, (-3.0 * delayLengthInSamples ) / (rt60 * SAMPLINGRATEF) );
 }
 
-void FDN::setRoomSize(float roomSize){
-    roomSizeNeedsUpdate = true;
-    newRoomSize = int (roomSize * ROOMSIZE); //assume square
-   // printf("The room size is now set to: %d\n", newRoomSize);
+void FDN::setParameter(Parameter params){
+    newParametersFDN = params;
+    parameterNeedsUpdate = true;
 }
 
-void FDN::setListenerLoc(Point2d loc){
-    listenerLocNew = Point2d(loc.x * roomWidthCM, (1.0f-loc.y)*roomHeightCM);
-    listenerX = loc.x; listenerY = 1.0f-loc.y;
-    listenerNeedsUpdate = true;
-    
-    printf("The value of listener location is now set to: %f %f \n" , listenerLocNew.x, listenerLocNew.y);
-};
-
-
-
-void FDN::setSoundSourceLoc(Point2d loc){
-    soundSourceX = loc.x; soundSourceY = 1.0f-loc.y;
-    soundSourceLocNew = Point2d(loc.x * roomWidthCM, (1.0f-loc.y)*roomHeightCM);
-    soundSourceNeedsUpdate = true;
-}
-
-void FDN::setRT60(float RT60){
-    newRT60 = RT60;
-    RT60NeedsUpdate = true;
-}
-
-
-// Method for  change in roomSize
-void FDN::setRoomSizeSafe(float roomSize) {
-
-    // default reverb settings
-    reverbOn = roomSize > 0.05;
+void FDN::setParameterSafe(Parameter params){
+    parametersFDN = newParametersFDN;
+    reverbOn = parametersFDN.roomSize > 0.05;
     
     float hpfCutoffHZ = 85.0;
     useHPF = true;
@@ -539,33 +452,13 @@ void FDN::setRoomSizeSafe(float roomSize) {
     maxTone = 0.49f;
     lowPassTone = true;
     
-    roomSizeCM = roomSize;
-    roomWidthCM = roomSizeCM * (widthPct / 0.5f);
-    roomHeightCM = roomSizeCM * ((1.0f-widthPct) / 0.5f);
-    
-    printf("Roomsize set to: %f %f\n", roomWidthCM, roomHeightCM);
-    listenerLoc = Point2d(roomWidthCM*listenerX, roomHeightCM*listenerY);
-    
-    printf("ListenerLoc is : %f %f \n", listenerLoc.x, listenerLoc.y);
-    listenerLocLeftEar = listenerLocRightEar = listenerLoc;
-    listenerLocLeftEar.x -= RADIUSOFHEAD;
-    listenerLocRightEar.x += RADIUSOFHEAD;
-    
-    soundSourceLoc = Point2d(roomWidthCM*soundSourceX, roomHeightCM*soundSourceY);
-    
-    setGainConstants();
-    
     randomSeed = 0; // reset the seed every time for consistent results
-
     
     // since we copy one input channel into many delay lines and tap each one several times for output,
     // we need to attenuate the input to compensate for the increased volume.
-	inputAttenuation = 1.0/sqrt((float)numTaps);
+    inputAttenuation = 1.0/sqrt((float)numTaps);
     // this is required to keep the mixing matrices unitary
-	matrixAttenuation = 1.0/sqrt((float)DELAYSPERUNIT);
-    
-
-    float rt60 = newRT60;
+    matrixAttenuation = 1.0/sqrt((float)DELAYSPERUNIT);
     
     //Must be in this order
     setRoomBouncePoints();
@@ -575,42 +468,6 @@ void FDN::setRoomSizeSafe(float roomSize) {
     calculateAdditionalDelays();
     setDirectDelayTimes();
     setDirectRayAngles();
-
-    for (int i = 0; i <NUMTAPSSTD; i++){
-        delayTimes[i] = delayTimesNew[i];
-    }
-    
-    setSingleTapDelay();
-    setFilters();
-    setGainConstants();
-    
-    int totalDelayTime = 0;
-    for(int i = numUncirculatedTaps; i < numTaps; i++) totalDelayTime += delayTimes[i];
-    resetDelay(totalDelayTime);
-    resetReadIndices();
-   
-    
-    // set high-frequency attenuation
-    setHFDecayMultiplier(8000.0f,1.5f,rt60);
-    
-    // cutoff low frequencies below HPFcutoff
-    setHighPassCutoff(hpfCutoffHZ / (SAMPLINGRATEF*0.5));
-    
-	resetTapAttenuation(rt60);
-}
-
-void FDN::setListenerOrSoundSourceLocSafe(){
-    //Must be in this order
-    setDelayChannels();
-    setDelayTimes();
-    setTempPoints();
-    calculateAdditionalDelays();
-    setDirectDelayTimes();
-    setDirectRayAngles();
-    
-    float rt60 = newRT60;
-    float hpfCutoffHZ = 85.0;
-    //  printf("Listener loc is at: x %d, and y %d \n", listenerLoc[0], listenerLoc[1]);
     
     for (int i = 0; i <NUMTAPSSTD; i++){
         delayTimes[i] = delayTimesNew[i];
@@ -625,13 +482,14 @@ void FDN::setListenerOrSoundSourceLocSafe(){
     resetDelay(totalDelayTime);
     resetReadIndices();
     
+    
     // set high-frequency attenuation
-    setHFDecayMultiplier(8000.0f,1.5f,rt60);
+    setHFDecayMultiplier(8000.0f,1.5f,parametersFDN.RT60);
     
     // cutoff low frequencies below HPFcutoff
     setHighPassCutoff(hpfCutoffHZ / (SAMPLINGRATEF*0.5));
     
-    resetTapAttenuation(rt60);
+    resetTapAttenuation(parametersFDN.RT60);
 }
 
 inline int FDN::getRandom(){
@@ -644,8 +502,8 @@ inline int FDN::getRandom(){
 inline void FDN::setRoomBouncePoints(){
     std::random_device rd;     // only used once to initialise (seed) engine
     std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-    std::uniform_int_distribution<int> uni(0,roomWidthCM); // guaranteed unbiased
-    std::uniform_int_distribution<int> uniH(0,roomHeightCM);
+    std::uniform_int_distribution<int> uni(0,parametersFDN.roomWidthCM); // guaranteed unbiased
+    std::uniform_int_distribution<int> uniH(0,parametersFDN.roomHeightCM);
     
     for (int i = 0; i<NUMTAPSSTD ; i++){
         //Decide on leftright / topdown wall (fix x or y)
@@ -656,18 +514,12 @@ inline void FDN::setRoomBouncePoints(){
             if (r2 == 0){
                 //left wall (x = 0)
                 int random_integer = uniH(rng);
-                //store in roomBouncePoints
-//                roomBouncePoints[i*2] = 0; //x
-//                roomBouncePoints[(i*2)+1] = random_integer; //y
                 roomBouncePoints[i] = Point2d(0.0f, random_integer);
             }
             else{
                 //right wall (x = roomWidthCM)
                 int random_integer = uniH(rng);
-                //store in roomBouncePoints
-//                roomBouncePoints[i*2] = roomWidthCM; //x
-//                roomBouncePoints[(i*2)+1] = random_integer; //y
-                roomBouncePoints[i] = Point2d(roomWidthCM,random_integer);
+                roomBouncePoints[i] = Point2d(parametersFDN.roomWidthCM,random_integer);
             }
         }
         else{
@@ -676,29 +528,15 @@ inline void FDN::setRoomBouncePoints(){
             if (r2 == 0){
                 //top wall (y = roomwidthCM)
                 int random_integer = uni(rng);
-                //store in roomBouncePoints
-//                roomBouncePoints[i*2] = random_integer; //x
-//                roomBouncePoints[(i*2)+1] = roomHeightCM; //y
-                roomBouncePoints[i] = Point2d(random_integer,roomHeightCM);
+                roomBouncePoints[i] = Point2d(random_integer,parametersFDN.roomHeightCM);
             }
             else{
                 //down wall (y = 0)
                 int random_integer = uni(rng);
-                //store in roomBouncePoints
-//                roomBouncePoints[i*2] = random_integer; //x
-//                roomBouncePoints[(i*2)+1] = 0; //y
                 roomBouncePoints[i] = Point2d(random_integer,0.0f);
             }
         }
-     //   printf("%d,%d \n", roomBouncePoints[i*2], roomBouncePoints[i*2 + 1]);
     }
-    
-    //For debugging
-//    for (int i=0; i<NUMTAPSSTD; i++){
-//        int x = roomBouncePoints[i*2];
-//        int y = roomBouncePoints[(i*2)+1];
-//        printf("Point %d: x is %d, y is %d\n", i+1, x, y);
-//    }
 }
 
 inline float FDN::getDistance(float x1, float y1, float x2, float y2){
@@ -720,16 +558,16 @@ inline void FDN::setDelayTimes(){
         
         if (ch < CHANNELS/2){
             //use right ear
-            float d1 = roomBouncePoints[i].distance(soundSourceLoc);
-            float d2 = roomBouncePoints[i].distance(listenerLocRightEar);
+            float d1 = roomBouncePoints[i].distance(parametersFDN.soundSourceLoc);
+            float d2 = roomBouncePoints[i].distance(parametersFDN.listenerLocRightEar);
             float td = (d1 + d2) * CENTIMETRESTOMETRES;
             float delaySeconds = td / SOUNDSPEED;
             delayTimesNew[i] = delaySeconds * SAMPLINGRATEF;
         }
         else{
             //use left ear
-            float d1 = soundSourceLoc.distance(roomBouncePoints[i]);
-            float d2 = listenerLocLeftEar.distance(roomBouncePoints[i]);
+            float d1 = parametersFDN.soundSourceLoc.distance(roomBouncePoints[i]);
+            float d2 = parametersFDN.listenerLocLeftEar.distance(roomBouncePoints[i]);
             float td = (d1 + d2) * CENTIMETRESTOMETRES;
             float delaySeconds = td / SOUNDSPEED;
             delayTimesNew[i] = delaySeconds * SAMPLINGRATEF;
@@ -740,8 +578,8 @@ inline void FDN::setDelayTimes(){
 
 inline void FDN::setDirectDelayTimes(){
     //Calculate delay from source to receiver
-    float directDelayLeft = soundSourceLoc.distance(listenerLocLeftEar)*CENTIMETRESTOMETRES / SOUNDSPEED;
-    float directDelayRight = soundSourceLoc.distance(listenerLocRightEar)*CENTIMETRESTOMETRES / SOUNDSPEED;
+    float directDelayLeft = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocLeftEar)*CENTIMETRESTOMETRES / SOUNDSPEED;
+    float directDelayRight = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocRightEar)*CENTIMETRESTOMETRES / SOUNDSPEED;
     directDelayTimes[0] = directDelayLeft;
     directDelayTimes[1] = directDelayRight;
 }
@@ -749,8 +587,8 @@ inline void FDN::setDirectDelayTimes(){
 void FDN::setDirectRayAngles(){
     
     float yDiff2, xDiff2;
-    yDiff2 = soundSourceLoc.y - listenerLoc.y;
-    xDiff2 = soundSourceLoc.x - listenerLoc.x;
+    yDiff2 = parametersFDN.soundSourceLoc.y - parametersFDN.listenerLoc.y;
+    xDiff2 = parametersFDN.soundSourceLoc.x - parametersFDN.listenerLoc.x;
     float angle = atan2(xDiff2, yDiff2) * 180.0f / M_PI;
     directRayAngles[0] = angle;
     directRayAngles[1] = angle;
@@ -785,8 +623,8 @@ size_t FDN::angleToChannel(float angleInDegrees){
 
 //azimuth is clockwise 0 to 360 degree, p. 149 DAFX
 size_t FDN::determineChannel(float x,float y){
-    float xL = listenerLoc.x;
-    float yL = listenerLoc.y;
+    float xL = parametersFDN.listenerLoc.x;
+    float yL = parametersFDN.listenerLoc.y;
     
     float xDistance = x - xL;
     float yDistance = y - yL;
@@ -866,8 +704,8 @@ void FDN::setTempPoints(){
 //            float v1[2] = {listenerLoc[0], listenerLoc[1] - roomHeightCM};
 //            float v2[2] = {listenerLoc[0], 0.0f};
 //            float v3[2] = {-sin(angle * M_PI / 180.f), cos(angle* M_PI / 180.f)};
-            Point2d v1 = Point2d(listenerLoc.x,listenerLoc.y-roomHeightCM);
-            Point2d v2 = Point2d(listenerLoc.x,0.0f);
+            Point2d v1 = Point2d(parametersFDN.listenerLoc.x,parametersFDN.listenerLoc.y-parametersFDN.roomHeightCM);
+            Point2d v2 = Point2d(parametersFDN.listenerLoc.x,0.0f);
             Point2d v3 = Point2d(-sin(angle * M_PI / 180.f),cos(angle* M_PI / 180.f));
          //   printf("v3: %f %f %f \n", v3[0], v3[1], angle);
             float t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
@@ -876,15 +714,15 @@ void FDN::setTempPoints(){
                 //find intersection with x = 0
 //                v1[1] = listenerLoc[1];
 //                v2[1] = roomHeightCM; v2[0] = 0.0f;
-                v1.y = listenerLoc.y;
-                v2 = Point2d(0.0f,roomHeightCM);
+                v1.y = parametersFDN.listenerLoc.y;
+                v2 = Point2d(0.0f,parametersFDN.roomHeightCM);
                 
                 t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-                point = Point2d(0.0f,roomHeightCM * t2);
+                point = Point2d(0.0f,parametersFDN.roomHeightCM * t2);
             }
             else{
 //                point[0] = listenerLoc[0] * t2; point[1] = roomHeightCM;
-                point = Point2d(listenerLoc.x * t2,roomHeightCM);
+                point = Point2d(parametersFDN.listenerLoc.x * t2,parametersFDN.roomHeightCM);
             }
         }
         
@@ -893,20 +731,20 @@ void FDN::setTempPoints(){
             //for back left ears
             //  printf ("back left ears \n");
             //find intersection with x = 0
-            Point2d v1 = listenerLoc;
-            Point2d v2 = Point2d(0.0f, roomHeightCM);
+            Point2d v1 = parametersFDN.listenerLoc;
+            Point2d v2 = Point2d(0.0f, parametersFDN.roomHeightCM);
             Point2d v3 = Point2d(-sin(angle* M_PI / 180.f), cos(angle* M_PI / 180.f));
          //     printf("v3: %f %f %f \n", v3[0], v3[1], angle);
             float t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
             
             if (t2 > 1.0f or t2 < 0.0f){
                 //find intersection with y = 0
-                v2 = Point2d(listenerLoc.x,0.0f);
+                v2 = Point2d(parametersFDN.listenerLoc.x,0.0f);
                 t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-                point = Point2d(listenerLoc.x * t2, 0.0f);
+                point = Point2d(parametersFDN.listenerLoc.x * t2, 0.0f);
             }
             else{
-                point = Point2d(0.0f, roomHeightCM*t2);
+                point = Point2d(0.0f, parametersFDN.roomHeightCM*t2);
             }
         }
         
@@ -915,8 +753,8 @@ void FDN::setTempPoints(){
             angle = 90.f - angle;
            //   printf ("front right ears \n");
             //find intersection with y = h
-            Point2d v1 = Point2d(listenerLoc.x, listenerLoc.y- roomHeightCM);
-            Point2d v2 = Point2d(roomWidthCM, 0);
+            Point2d v1 = Point2d(parametersFDN.listenerLoc.x, parametersFDN.listenerLoc.y- parametersFDN.roomHeightCM);
+            Point2d v2 = Point2d(parametersFDN.roomWidthCM, 0);
             Point2d v3 = Point2d(-sin(angle* M_PI / 180.f),cos(angle* M_PI / 180.f));
             
          //   printf("v3: %f %f %f \n", v3[0], v3[1], angle);
@@ -924,15 +762,15 @@ void FDN::setTempPoints(){
          //   printf("initial t: %f \n ", t2);
             if (t2 > 1.0f or t2 < 0.0f){
                 //find intersection with x = width
-                v1.x = listenerLoc.x - roomWidthCM; v1.y = listenerLoc.y;
-                v2.x = 0.0f; v2.y = roomHeightCM;
+                v1.x = parametersFDN.listenerLoc.x - parametersFDN.roomWidthCM; v1.y = parametersFDN.listenerLoc.y;
+                v2.x = 0.0f; v2.y = parametersFDN.roomHeightCM;
                 
                 t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
             //    printf("%f %f %f %f %f %f \n", v1[0], v1[1], v2[0], v2[1], dotProduct(v1, v3), dotProduct(v2, v3));
-                point = Point2d(roomWidthCM, t2*roomHeightCM);
+                point = Point2d(parametersFDN.roomWidthCM, t2*parametersFDN.roomHeightCM);
             }
             else{
-                point = Point2d(roomWidthCM*t2, roomHeightCM);
+                point = Point2d(parametersFDN.roomWidthCM*t2, parametersFDN.roomHeightCM);
                
             }
          //   printf("T: %f\n", t2);
@@ -943,22 +781,22 @@ void FDN::setTempPoints(){
             angle = 90.f - angle;
             //for right back ears
             //find intersection with x = w
-            Point2d v1 = Point2d(listenerLoc.x - roomWidthCM, listenerLoc.y);
-            Point2d v2 = Point2d(0.0f, roomHeightCM);
+            Point2d v1 = Point2d(parametersFDN.listenerLoc.x - parametersFDN.roomWidthCM, parametersFDN.listenerLoc.y);
+            Point2d v2 = Point2d(0.0f, parametersFDN.roomHeightCM);
             Point2d v3 = Point2d(-sin(angle* M_PI / 180.f), cos(angle* M_PI / 180.f));
        //     printf("v3: %f %f %f \n", v3[0], v3[1], angle);
             float t2 = v1.dotProduct(v3)/ v2.dotProduct(v3);
             
             if (t2 > 1.0f or t2 < 0.0f){
                 //find intersection with y = 0
-                v1.x = listenerLoc.x; v1.y = listenerLoc.y;
-                v2.x = roomWidthCM; v2.y = 0.0f;
+                v1.x = parametersFDN.listenerLoc.x; v1.y = parametersFDN.listenerLoc.y;
+                v2.x = parametersFDN.roomWidthCM; v2.y = 0.0f;
                 
                 t2 = v1.dotProduct(v3) / v2.dotProduct(v3);
-                point = Point2d(roomWidthCM*t2, 0.0f);
+                point = Point2d(parametersFDN.roomWidthCM*t2, 0.0f);
             }
             else{
-                point = Point2d(roomWidthCM, roomWidthCM*t2);
+                point = Point2d(parametersFDN.roomWidthCM, parametersFDN.roomWidthCM*t2);
             }
         }
         
@@ -975,12 +813,12 @@ void FDN::calculateAdditionalDelays(){
     {
         if (i < CHANNELS/2){ //CHANNEL 0 -3 FOR RIGHT EAR
              //near to right use temp0,leftear- temp0,rightear, 0 to 3, FOR LEFT EAR
-            float d = (getDistance(tempPoints[i*2], tempPoints[i*2+1], listenerLocLeftEar.x, listenerLocLeftEar.y) - getDistance(tempPoints[i*2], tempPoints[i*2+1], listenerLocRightEar.x, listenerLocRightEar.y) ) * CENTIMETRESTOMETRES / SOUNDSPEED;
+            float d = (getDistance(tempPoints[i*2], tempPoints[i*2+1], parametersFDN.listenerLocLeftEar.x, parametersFDN.listenerLocLeftEar.y) - getDistance(tempPoints[i*2], tempPoints[i*2+1], parametersFDN.listenerLocRightEar.x, parametersFDN.listenerLocRightEar.y) ) * CENTIMETRESTOMETRES / SOUNDSPEED;
             additionalDelays[i] = d;
         }
         else{ //CHANNEL 4-7 FOR LEFT EAR
               //near to left use temp4,rightear - temp4,leftear, 4 to 7, FOR RIGHT EAR
-           float d = (getDistance(tempPoints[i*2], tempPoints[i*2+1], listenerLocRightEar.x, listenerLocRightEar.y) - getDistance(tempPoints[i*2], tempPoints[i*2+1], listenerLocLeftEar.x, listenerLocLeftEar.y) ) * CENTIMETRESTOMETRES / SOUNDSPEED;
+           float d = (getDistance(tempPoints[i*2], tempPoints[i*2+1], parametersFDN.listenerLocRightEar.x, parametersFDN.listenerLocRightEar.y) - getDistance(tempPoints[i*2], tempPoints[i*2+1], parametersFDN.listenerLocLeftEar.x, parametersFDN.listenerLocLeftEar.y) ) * CENTIMETRESTOMETRES / SOUNDSPEED;
             additionalDelays[i] = d;
         }
         reverbDelays[i].setTimeSafe(additionalDelays[i]);
@@ -988,14 +826,9 @@ void FDN::calculateAdditionalDelays(){
 }
 
 void FDN::setGainConstants(){
-    roomSA = 2.0f * (roomWidthCM  *roomHeightCM * CENTIMETRESTOMETRESSQ + roomWidthCM *roomCeilingCM * CENTIMETRESTOMETRESSQ + roomHeightCM  *roomCeilingCM * CENTIMETRESTOMETRESSQ);
-    directDistanceInMetres = getDistance(soundSourceLoc.x, soundSourceLoc.y, listenerLoc.x, listenerLoc.y) * CENTIMETRESTOMETRES;
-    directMix = directGain * 1.0f / (directDistanceInMetres*directDistanceInMetres);
-    reverbMix = reverbGain * 1.0f / roomSA;
+    roomSA = 2.0f * (parametersFDN.roomWidthCM*parametersFDN.roomHeightCM * CENTIMETRESTOMETRESSQ + parametersFDN.roomWidthCM *parametersFDN.roomCeilingCM * CENTIMETRESTOMETRESSQ + parametersFDN.roomHeightCM  * parametersFDN.roomCeilingCM * CENTIMETRESTOMETRESSQ);
+    directDistanceInMetres = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc) * CENTIMETRESTOMETRES;
+    directMix = parametersFDN.directGain * 1.0f / (directDistanceInMetres*directDistanceInMetres);
+    reverbMix = parametersFDN.reverbGain * 1.0f / roomSA;
 }
 
-void FDN::setWidthRatio(float size){
-    widthPctNew = size;
-    printf("Setwidthratio called\n");
-    widthPctChanged = true;
-}

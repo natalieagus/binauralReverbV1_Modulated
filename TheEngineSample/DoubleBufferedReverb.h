@@ -11,12 +11,14 @@
 #include <stdio.h>
 #import "FDN.h"
 #define DB_REVERB_BUFFER_SIZE 256
-
+#import "Parameter.hpp"
 
 class DoubleBufferedReverb
 {
 public:
     DoubleBufferedReverb(void);
+    
+    Parameter parameters = Parameter();
     
     FDN reverb1;
     FDN reverb2;
