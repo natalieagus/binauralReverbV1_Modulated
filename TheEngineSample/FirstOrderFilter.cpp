@@ -24,7 +24,7 @@ float FirstOrderFilter::process(float sample){
 }
 
 // angle is 0 at 12 o'clock and positive numbers count clockwise
-//
+//a0 is always 1
 void FirstOrderFilter::setAngle(float theta, float fc){
     // set a1, b0, b1
    // float initTheta = theta;
