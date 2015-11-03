@@ -9,7 +9,6 @@
 //Initialize condition:
 //Room size 5x5 metres
 //RT60 value 0.7 seconds
-int iii = 0;
 
 // this is the function we call to process the audio from iFretless.
 void  FDN::processIFretlessBuffer(float* input, size_t numFrames, float* outputL, float* outputR)
@@ -59,8 +58,12 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     // copy the filtered input so that we can process it without affecting the original value
 	float xn = *pInput;
 
+
     // attenuate the input
     xn *= inputAttenuation;
+    //    printf("Xn is: %f  inputOriginal is: %f\n", xn, *pInput);
+    //multiply with listener volume
+
     
     float fdnTankOutsNew[CHANNELS] = {0.0f, 0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, 0.0f};
     
@@ -72,9 +75,6 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
 
     // scale the output taps according to the feedBackTapGains
     vDSP_vmul(feedbackTapGains, 1, outputsPF, 1, outputsPF, 1, numTaps);
-  
-    //multiply with listener volume
-    vDSP_vmul(listenerVol, 1, outputsPF, 1, outputsPF, 1, numTaps);
     
     processDirectRays(pInput, directRaysOutput);
     processTankOut(fdnTankOutsNew);
@@ -84,16 +84,12 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     filterChannels(fdnTankOutsNew, directRaysOutput, fdnTankOutLeft, fdnTankOutRight);
 
     float reverbOut[2] = {0.0f, 0.0f};
-    float reverbMultiplier[2] = {reverbGainBackToOne, reverbGainBackToOne};
     
     //add another delay here, before mixing them together, for left tank out, add delays on channel 0-3, for right tank out, add delays on channel 4-7
     addReverbDelay(fdnTankOutLeft, fdnTankOutRight);
     vDSP_sve(fdnTankOutLeft, 1, &reverbOut[0], CHANNELS);
     vDSP_sve(fdnTankOutRight, 1, &reverbOut[1], CHANNELS);
     
-    //Multiply with reverbGainBackToOne
-    vDSP_vmul(reverbOut, 1, reverbMultiplier, 1, reverbOut, 1, 2);
-
     *pOutputL = (directRaysOutput[0]*directMix - reverbOut[0]);
     *pOutputR = (directRaysOutput[1]*directMix - reverbOut[1]);
     
@@ -167,7 +163,10 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     //}
     
     // mix new input together with feedback input
-    vDSP_vsadd(inputs, 1, &xn, inputs, 1, numDelays);
+    float scaledInput[NUMTAPSSTD] = {};
+    vDSP_vsmul(listenerVol, 1, &xn, scaledInput, 1, numDelays);
+    vDSP_vadd(inputs, 1, scaledInput, 1, inputs, 1, numDelays);
+  //  vDSP_vsadd(inputs, 1, &xn, inputs, 1, numDelays);
     
     // feedback the mixed audio into the tank, shifting the feedback path over to the next unit
     size_t j;//,k;
@@ -766,9 +765,12 @@ void FDN::calculateAdditionalDelays(){
 
 void FDN::setGainConstants(){
  //   roomSA = 2.0f * (parametersFDN.roomWidth*parametersFDN.roomHeight  + parametersFDN.roomWidth *parametersFDN.roomCeiling  + parametersFDN.roomHeight  * parametersFDN.roomCeiling );
-    directDistanceInMetres = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
-    directMix = parametersFDN.directGain * 1.0f / (directDistanceInMetres*directDistanceInMetres);
- 
+    directMix = parametersFDN.directGain * 1.0f / powf(parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc),2.0f);
+    if (directMix > 1.0f){
+        directMix = 1.0f;
+    }
+  //  float rd = REFERENCEDISTANCE;
+ //   directMix = powf(rd/parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc), 2.0);
  //   reverbMix = parametersFDN.reverbGain * 1.0f / roomSA;
 
 }
@@ -777,13 +779,19 @@ void FDN::setListenerVolume(){
     //calculate volume to the middle of the head
     totalListenerVol = 0.0f;
     for (int i = 0; i < NUMTAPSSTD; i++){
-        listenerVol[i] = (1.f / sqrt((float)numTaps)) * (1.f/ powf( parametersFDN.listenerLoc.distance(roomBouncePoints[i]), 2.f) );
-       // printf("Listener vol i %d is : %f \n",i, listenerVol[i]);
+        //I2 = [d1/d2]^2*I1
+      //  float rd = REFERENCEDISTANCE;
+        listenerVol[i] = parametersFDN.reverbGain * 1.0f / powf( parametersFDN.listenerLoc.distance(roomBouncePoints[i]), 2.f);
+       
+        if (listenerVol[i] > 1.0f){
+            listenerVol[i] = 1.0f;
+        }
+         printf("Listener vol i %d is : %f dist is %f \n",i, listenerVol[i], parametersFDN.listenerLoc.distance(roomBouncePoints[i]));
         totalListenerVol += powf(listenerVol[i], 2.f);
     }
     totalListenerVol = sqrt(totalListenerVol);
     reverbGainBackToOne = 1.0f/totalListenerVol;
-   // printf("Reverb Gain Back to One is: %f \n", reverbGainBackToOne);
+    //printf("Reverb Gain Back to One is: %f \n", reverbGainBackToOne);
     
 }
 

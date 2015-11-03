@@ -1132,15 +1132,15 @@ static inline float translate(float val, float min, float max) {
 
 
 - (void) moveSoundSource: (NSTimer*) timer{
-    if (autoSoundMove && counter % 20 == 0){
+    if (autoSoundMove && counter % 15 == 0){
         counter = 0;
       //  printf("x y c %f %f %d\n", SoundSource.frame.origin.x, SoundSource.frame.origin.y, counter );
  
-        CGFloat x = Listener.frame.origin.x + sin(angle) * 200;
+        CGFloat x = Listener.frame.origin.x + sin(angle) * 300;
         if (x > self.tableView.bounds.size.width){
             x =self.tableView.bounds.size.width;
         }
-        CGFloat y = Listener.frame.origin.y + cos(angle) * 200;
+        CGFloat y = Listener.frame.origin.y + cos(angle) * 300;
         if ( y >  self.tableView.bounds.size.width){
             y =  self.tableView.bounds.size.width;
         }
@@ -1166,7 +1166,7 @@ static inline float translate(float val, float min, float max) {
     }
     
     counter ++;
-    angle += 0.03;
+    angle += 0.015;
 }
 
 - (void)updateLevels:(NSTimer*)timer {

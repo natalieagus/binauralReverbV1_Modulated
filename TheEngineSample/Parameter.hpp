@@ -24,8 +24,9 @@
 #define RADIUSOFHEAD 0.08f //8cm radius of head
 #define ROOMSIZE 30.f //30 metres max
 #define ROOMCEILING 2.f
-#define INITIALDIRECTGAIN 1.0f;
-#define INITIALREVERBGAIN 0.5f;
+#define INITIALDIRECTGAIN 1.f/(4.f*M_PI);
+#define INITIALREVERBGAIN 1.f/(4.f*M_PI);
+#define REFERENCEDISTANCE 1.0f; //The original volume is as loud as we can hear within 1 metre away from the soundsource
 
 typedef struct Parameter {
     
