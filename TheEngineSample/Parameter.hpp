@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include "Point2d.hpp"
+#include <math.h>
 
 #define INITIALROOMSIZE 0.15f
 #define INITIALWIDTHRATIO 0.5f
@@ -20,10 +21,10 @@
 #define INITIALSOUNDX 0.5f
 #define INITIALSOUNDY (2.0f/3.0f)
 #define INITIALRT60 0.4f
-#define RADIUSOFHEAD 8.f //8cm radius of head
-#define ROOMSIZE 3000.f //30 metres max
-#define ROOMCEILING 300.f
-#define INITIALDIRECTGAIN 0.5f;
+#define RADIUSOFHEAD 0.08f //8cm radius of head
+#define ROOMSIZE 30.f //30 metres max
+#define ROOMCEILING 2.f
+#define INITIALDIRECTGAIN 1.0f;
 #define INITIALREVERBGAIN 0.5f;
 
 typedef struct Parameter {
@@ -33,9 +34,9 @@ typedef struct Parameter {
         this->roomSize = INITIALROOMSIZE * ROOMSIZE;
         this->roomSizeRatio = INITIALROOMSIZE;
         this->widthRatio = INITIALWIDTHRATIO;
-        this->roomWidthCM = this->roomSize * (widthRatio/0.5f);
-        this->roomHeightCM = this->roomSize * ((1.0f-widthRatio)/0.5f);
-        this->roomCeilingCM = ROOMCEILING;
+        this->roomWidth = this->roomSize * (widthRatio/0.5f);
+        this->roomHeight = this->roomSize * ((1.0f-widthRatio)/0.5f);
+        this->roomCeiling = ROOMCEILING;
         
         Point2d L = Point2d(INITIALLISTENERX, INITIALLISTENERY);
         setListenerLocation(L);
@@ -64,8 +65,8 @@ typedef struct Parameter {
     Point2d listenerLocRightEar;
     Point2d soundSourceLoc;
     float roomSizeRatio, RT60, widthRatio,roomSize;
-    float roomWidthCM, roomHeightCM;
-    float roomCeilingCM;
+    float roomWidth, roomHeight;
+    float roomCeiling;
     
     float directGain, reverbGain;
     

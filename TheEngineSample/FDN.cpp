@@ -73,6 +73,9 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     // scale the output taps according to the feedBackTapGains
     vDSP_vmul(feedbackTapGains, 1, outputsPF, 1, outputsPF, 1, numTaps);
   
+    //multiply with listener volume
+    vDSP_vmul(listenerVol, 1, outputsPF, 1, outputsPF, 1, numTaps);
+    
     processDirectRays(pInput, directRaysOutput);
     processTankOut(fdnTankOutsNew);
   
@@ -81,14 +84,18 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     filterChannels(fdnTankOutsNew, directRaysOutput, fdnTankOutLeft, fdnTankOutRight);
 
     float reverbOut[2] = {0.0f, 0.0f};
+    float reverbMultiplier[2] = {reverbGainBackToOne, reverbGainBackToOne};
     
     //add another delay here, before mixing them together, for left tank out, add delays on channel 0-3, for right tank out, add delays on channel 4-7
     addReverbDelay(fdnTankOutLeft, fdnTankOutRight);
     vDSP_sve(fdnTankOutLeft, 1, &reverbOut[0], CHANNELS);
     vDSP_sve(fdnTankOutRight, 1, &reverbOut[1], CHANNELS);
+    
+    //Multiply with reverbGainBackToOne
+    vDSP_vmul(reverbOut, 1, reverbMultiplier, 1, reverbOut, 1, 2);
 
-    *pOutputL = (directRaysOutput[0]*directMix - reverbOut[0]*reverbMix);
-    *pOutputR = (directRaysOutput[1]*directMix - reverbOut[1]*reverbMix);
+    *pOutputL = (directRaysOutput[0]*directMix - reverbOut[0]);
+    *pOutputR = (directRaysOutput[1]*directMix - reverbOut[1]);
     
     // apply a first order high-shelf filter to the feedback path
     //
@@ -476,6 +483,7 @@ void FDN::setParameterSafe(Parameter params){
     setSingleTapDelay();
     setFilters();
     setGainConstants();
+    setListenerVolume();
     
     int totalDelayTime = 0;
     for(int i = numUncirculatedTaps; i < numTaps; i++) totalDelayTime += delayTimes[i];
@@ -502,8 +510,8 @@ inline int FDN::getRandom(){
 inline void FDN::setRoomBouncePoints(){
     std::random_device rd;     // only used once to initialise (seed) engine
     std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-    std::uniform_int_distribution<int> uniW(0,parametersFDN.roomWidthCM); // guaranteed unbiased
-    std::uniform_int_distribution<int> uniH(0,parametersFDN.roomHeightCM);
+    std::uniform_real_distribution<float> uniW(0,parametersFDN.roomWidth); // guaranteed unbiased
+    std::uniform_real_distribution<float> uniH(0,parametersFDN.roomHeight);
     
     for (int i = 0; i<NUMTAPSSTD; i++){
         float x = (float) uniW(rng);
@@ -513,7 +521,7 @@ inline void FDN::setRoomBouncePoints(){
     }
     
     
-    int numPointsLeftWall = numTaps*parametersFDN.roomWidthCM/(parametersFDN.roomWidthCM+parametersFDN.roomHeightCM)/2;
+    int numPointsLeftWall = numTaps*parametersFDN.roomWidth/(parametersFDN.roomWidth+parametersFDN.roomHeight)/2;
     int numPointsRightWall = numPointsLeftWall;
     int numPointsFrontWall = (numTaps- (numPointsLeftWall*2))/2;
    // int numPointsBackWall = numTaps - (numPointsFrontWall + numPointsLeftWall + numPointsRightWall);
@@ -523,15 +531,19 @@ inline void FDN::setRoomBouncePoints(){
     }
     
     for(int i = numPointsLeftWall; i< numPointsLeftWall+numPointsRightWall; i++){
-        roomBouncePoints[i].x =parametersFDN.roomWidthCM;
+        roomBouncePoints[i].x =parametersFDN.roomWidth;
     }
     for (int i = numPointsLeftWall+numPointsRightWall; i< numPointsLeftWall+numPointsRightWall+numPointsFrontWall; i++){
-        roomBouncePoints[i].y = parametersFDN.roomHeightCM;
+        roomBouncePoints[i].y = parametersFDN.roomHeight;
     }
     
     for (int i = numPointsFrontWall+numPointsLeftWall+numPointsRightWall; i<numTaps; i++){
         roomBouncePoints[i].y = 0;
     }
+    
+//    for (int i = 0; i<numTaps ; i++){
+//        printf("Room bounce pt : %d is x %f y %f \n", i, roomBouncePoints[i].x, roomBouncePoints[i].y);
+//    }
 }
 
 inline float FDN::getDistance(float x1, float y1, float x2, float y2){
@@ -555,7 +567,7 @@ inline void FDN::setDelayTimes(){
             //use right ear
             float d1 = roomBouncePoints[i].distance(parametersFDN.soundSourceLoc);
             float d2 = roomBouncePoints[i].distance(parametersFDN.listenerLocRightEar);
-            float td = (d1 + d2) * CENTIMETRESTOMETRES;
+            float td = (d1 + d2);
             float delaySeconds = td / SOUNDSPEED;
             delayTimesNew[i] = delaySeconds * SAMPLINGRATEF;
         }
@@ -563,7 +575,7 @@ inline void FDN::setDelayTimes(){
             //use left ear
             float d1 = parametersFDN.soundSourceLoc.distance(roomBouncePoints[i]);
             float d2 = parametersFDN.listenerLocLeftEar.distance(roomBouncePoints[i]);
-            float td = (d1 + d2) * CENTIMETRESTOMETRES;
+            float td = (d1 + d2);
             float delaySeconds = td / SOUNDSPEED;
             delayTimesNew[i] = delaySeconds * SAMPLINGRATEF;
         }
@@ -573,8 +585,8 @@ inline void FDN::setDelayTimes(){
 
 inline void FDN::setDirectDelayTimes(){
     //Calculate delay from source to receiver
-    float directDelayLeft = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocLeftEar)*CENTIMETRESTOMETRES / SOUNDSPEED;
-    float directDelayRight = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocRightEar)*CENTIMETRESTOMETRES / SOUNDSPEED;
+    float directDelayLeft = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocLeftEar) / SOUNDSPEED;
+    float directDelayRight = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocRightEar) / SOUNDSPEED;
     directDelayTimes[0] = directDelayLeft;
     directDelayTimes[1] = directDelayRight;
 }
@@ -687,9 +699,9 @@ void FDN::setSingleTapDelay(){
 void FDN::setTempPoints(){
     
     float yBot = 0.0f-parametersFDN.listenerLoc.y;
-    float yTop = parametersFDN.roomHeightCM - parametersFDN.listenerLoc.y;
+    float yTop = parametersFDN.roomHeight - parametersFDN.listenerLoc.y;
     float xLeft = 0.0f - parametersFDN.listenerLoc.x;
-    float xRight = parametersFDN.roomWidthCM - parametersFDN.listenerLoc.x;
+    float xRight = parametersFDN.roomWidth - parametersFDN.listenerLoc.x;
     
     float w =parametersFDN.listenerLoc.x;
     float h = parametersFDN.listenerLoc.y;
@@ -705,12 +717,12 @@ void FDN::setTempPoints(){
         
         for (int j = 0; j< 4; j++){
             float xO = pointArray[j].x + parametersFDN.listenerLoc.x;
-            if (xO > parametersFDN.roomWidthCM or xO < 0.0f){
+            if (xO > parametersFDN.roomWidth or xO < 0.0f){
                 pointArray[j].mark = false;
                 continue;
             }
             float yO = pointArray[j].y + parametersFDN.listenerLoc.y;
-            if (yO > parametersFDN.roomHeightCM or yO < 0.0f){
+            if (yO > parametersFDN.roomHeight or yO < 0.0f){
                 pointArray[j].mark = false;
                 continue;
             }
@@ -731,7 +743,7 @@ void FDN::setTempPoints(){
 //    for (int i = 0; i<CHANNELS; i++){
 //        printf("For angle: %f tempoints x : %f tempoints y: %f \n", channelToAngle(i), tempPoints[i].x, tempPoints[i].y);
 //    }
-    
+//    
 
 }
 
@@ -740,12 +752,12 @@ void FDN::calculateAdditionalDelays(){
     {
         if (i < CHANNELS/2){ //CHANNEL 0 -3 FOR RIGHT EAR
              //near to right use temp0,leftear- temp0,rightear, 0 to 3, FOR LEFT EAR
-            float d = (tempPoints[i].distance(parametersFDN.listenerLocLeftEar) - tempPoints[i].distance(parametersFDN.listenerLocRightEar)) * CENTIMETRESTOMETRES / SOUNDSPEED;
+            float d = (tempPoints[i].distance(parametersFDN.listenerLocLeftEar) - tempPoints[i].distance(parametersFDN.listenerLocRightEar))  / SOUNDSPEED;
             additionalDelays[i] = d;
         }
         else{ //CHANNEL 4-7 FOR LEFT EAR
               //near to left use temp4,rightear - temp4,leftear, 4 to 7, FOR RIGHT EAR
-            float d = (tempPoints[i].distance(parametersFDN.listenerLocRightEar) - tempPoints[i].distance(parametersFDN.listenerLocLeftEar)) * CENTIMETRESTOMETRES / SOUNDSPEED;
+            float d = (tempPoints[i].distance(parametersFDN.listenerLocRightEar) - tempPoints[i].distance(parametersFDN.listenerLocLeftEar))  / SOUNDSPEED;
             additionalDelays[i] = d;
         }
         reverbDelays[i].setTimeSafe(additionalDelays[i]);
@@ -753,9 +765,27 @@ void FDN::calculateAdditionalDelays(){
 }
 
 void FDN::setGainConstants(){
-    roomSA = 2.0f * (parametersFDN.roomWidthCM*parametersFDN.roomHeightCM * CENTIMETRESTOMETRESSQ + parametersFDN.roomWidthCM *parametersFDN.roomCeilingCM * CENTIMETRESTOMETRESSQ + parametersFDN.roomHeightCM  * parametersFDN.roomCeilingCM * CENTIMETRESTOMETRESSQ);
-    directDistanceInMetres = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc) * CENTIMETRESTOMETRES;
+ //   roomSA = 2.0f * (parametersFDN.roomWidth*parametersFDN.roomHeight  + parametersFDN.roomWidth *parametersFDN.roomCeiling  + parametersFDN.roomHeight  * parametersFDN.roomCeiling );
+    directDistanceInMetres = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
     directMix = parametersFDN.directGain * 1.0f / (directDistanceInMetres*directDistanceInMetres);
-    reverbMix = parametersFDN.reverbGain * 1.0f / roomSA;
+ 
+ //   reverbMix = parametersFDN.reverbGain * 1.0f / roomSA;
+
 }
+
+void FDN::setListenerVolume(){
+    //calculate volume to the middle of the head
+    totalListenerVol = 0.0f;
+    for (int i = 0; i < NUMTAPSSTD; i++){
+        listenerVol[i] = (1.f / sqrt((float)numTaps)) * (1.f/ powf( parametersFDN.listenerLoc.distance(roomBouncePoints[i]), 2.f) );
+       // printf("Listener vol i %d is : %f \n",i, listenerVol[i]);
+        totalListenerVol += powf(listenerVol[i], 2.f);
+    }
+    totalListenerVol = sqrt(totalListenerVol);
+    reverbGainBackToOne = 1.0f/totalListenerVol;
+   // printf("Reverb Gain Back to One is: %f \n", reverbGainBackToOne);
+    
+}
+
+
 

@@ -17,8 +17,8 @@ FDN: a feedback delay network reverberator
 #define AUDIOCHANNELS 2
 #define SAMPLINGRATEF 44100.0f
 #define SOUNDSPEED 340.29f
-#define CENTIMETRESTOMETRES 0.01f
-#define CENTIMETRESTOMETRESSQ CENTIMETRESTOMETRES*CENTIMETRESTOMETRES
+//#define CENTIMETRESTOMETRES 0.01f
+//#define CENTIMETRESTOMETRESSQ CENTIMETRESTOMETRES*CENTIMETRESTOMETRES
 #define CHANNELS 8
 
 #import <Accelerate/Accelerate.h>
@@ -46,7 +46,11 @@ protected:
     Parameter parametersFDN;
     Parameter newParametersFDN;
     void setParameterSafe(Parameter params);
-
+    
+    void setListenerVolume();
+    float totalListenerVol;
+    float listenerVol[NUMTAPSSTD];
+    float reverbGainBackToOne = 1.0f;
     
     float directDelayTimes[2]; //unit = FREQ * seconds
     float delayTimesNew[NUMTAPSSTD]; //unit = FREQ * seconds
@@ -64,6 +68,7 @@ protected:
     float directDistanceInMetres;
     float roomSA;
     void setGainConstants();
+    void normaliseGain();
 
     //To calculate delays
     //Method to calculate delay times based in randomised 72 points in the room, output to delayTimes[NUMTAPSSTD]
