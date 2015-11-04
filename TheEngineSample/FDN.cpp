@@ -766,10 +766,10 @@ void FDN::setGainConstants(){
     float rd = REFERENCEDISTANCE;
     //directMix = parametersFDN.directGain * 1.0f / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
     directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
-    //Clipping
-    if (directMix > 1.0f){
-        directMix = 1.0f;
-    }
+//    //Clipping
+//    if (directMix > 1.0f){
+//        directMix = 1.0f;
+//    }
     setListenerVolume();
 
 }
