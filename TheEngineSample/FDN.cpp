@@ -482,7 +482,6 @@ void FDN::setParameterSafe(Parameter params){
     setSingleTapDelay();
     setFilters();
     setGainConstants();
-    setListenerVolume();
     
     int totalDelayTime = 0;
     for(int i = numUncirculatedTaps; i < numTaps; i++) totalDelayTime += delayTimes[i];
@@ -764,14 +763,14 @@ void FDN::calculateAdditionalDelays(){
 }
 
 void FDN::setGainConstants(){
- //   roomSA = 2.0f * (parametersFDN.roomWidth*parametersFDN.roomHeight  + parametersFDN.roomWidth *parametersFDN.roomCeiling  + parametersFDN.roomHeight  * parametersFDN.roomCeiling );
-    directMix = parametersFDN.directGain * 1.0f / powf(parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc),2.0f);
+    float rd = REFERENCEDISTANCE;
+    //directMix = parametersFDN.directGain * 1.0f / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
+    directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
+    //Clipping
     if (directMix > 1.0f){
         directMix = 1.0f;
     }
-  //  float rd = REFERENCEDISTANCE;
- //   directMix = powf(rd/parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc), 2.0);
- //   reverbMix = parametersFDN.reverbGain * 1.0f / roomSA;
+    setListenerVolume();
 
 }
 
@@ -779,14 +778,14 @@ void FDN::setListenerVolume(){
     //calculate volume to the middle of the head
     totalListenerVol = 0.0f;
     for (int i = 0; i < NUMTAPSSTD; i++){
-        //I2 = [d1/d2]^2*I1
-      //  float rd = REFERENCEDISTANCE;
-        listenerVol[i] = parametersFDN.reverbGain * 1.0f / powf( parametersFDN.listenerLoc.distance(roomBouncePoints[i]), 2.f);
-       
+        float rd = REFERENCEDISTANCE;
+       // listenerVol[i] = parametersFDN.reverbGain * 1.0f /  parametersFDN.listenerLoc.distance(roomBouncePoints[i]);
+       listenerVol[i] = rd /  parametersFDN.listenerLoc.distance(roomBouncePoints[i]);
+        //clipping
         if (listenerVol[i] > 1.0f){
             listenerVol[i] = 1.0f;
         }
-         printf("Listener vol i %d is : %f dist is %f \n",i, listenerVol[i], parametersFDN.listenerLoc.distance(roomBouncePoints[i]));
+       //  printf("Listener vol i %d is : %f dist is %f \n",i, listenerVol[i], parametersFDN.listenerLoc.distance(roomBouncePoints[i]));
         totalListenerVol += powf(listenerVol[i], 2.f);
     }
     totalListenerVol = sqrt(totalListenerVol);
