@@ -64,6 +64,9 @@ protected:
     float additionalDelays[8];
     SingleTapDelay reverbDelays[8];
     void addReverbDelay(float* fdnLeft, float*fdnRight);
+    
+    void setRoomBouncePointsVer2();
+   // Point2d roomBouncePoints2[NUMTAPSSTD];
 
     float directDistanceInMetres;
     float roomSA;

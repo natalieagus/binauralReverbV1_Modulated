@@ -467,7 +467,8 @@ void FDN::setParameterSafe(Parameter params){
     matrixAttenuation = 1.0/sqrt((float)DELAYSPERUNIT);
     
     //Must be in this order
-    setRoomBouncePoints();
+   // setRoomBouncePoints();
+    setRoomBouncePointsVer2();
     setDelayChannels();
     setDelayTimes();
     setTempPoints();
@@ -504,45 +505,102 @@ inline int FDN::getRandom(){
     return r;
 }
 
-
-inline void FDN::setRoomBouncePoints(){
-    std::random_device rd;     // only used once to initialise (seed) engine
-    std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-    std::uniform_real_distribution<float> uniW(0,parametersFDN.roomWidth); // guaranteed unbiased
-    std::uniform_real_distribution<float> uniH(0,parametersFDN.roomHeight);
+inline void FDN::setRoomBouncePointsVer2(){
     
-    for (int i = 0; i<NUMTAPSSTD; i++){
-        float x = (float) uniW(rng);
-        float y = (float) uniH(rng);
+        float angleGap = 360.0f/(float) NUMTAPSSTD;
+        std::random_device rd;     // only used once to initialise (seed) engine
+        std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+        std::uniform_real_distribution<float> uni(-angleGap,angleGap); // guaranteed unbiased
+    
+        float yBot = 0.0f-parametersFDN.soundSourceLoc.y;
+        float yTop = parametersFDN.roomHeight - parametersFDN.soundSourceLoc.y;
+        float xLeft = 0.0f - parametersFDN.soundSourceLoc.x;
+        float xRight = parametersFDN.roomWidth - parametersFDN.soundSourceLoc.x;
         
-        roomBouncePoints[i] = Point2d(x,y);
-    }
-    
-    
-    int numPointsLeftWall = numTaps*parametersFDN.roomWidth/(parametersFDN.roomWidth+parametersFDN.roomHeight)/2;
-    int numPointsRightWall = numPointsLeftWall;
-    int numPointsFrontWall = (numTaps- (numPointsLeftWall*2))/2;
-   // int numPointsBackWall = numTaps - (numPointsFrontWall + numPointsLeftWall + numPointsRightWall);
-    
-    for (int i = 0; i < numPointsLeftWall; i++){
-        roomBouncePoints[i].x = 0.0f;
-    }
-    
-    for(int i = numPointsLeftWall; i< numPointsLeftWall+numPointsRightWall; i++){
-        roomBouncePoints[i].x =parametersFDN.roomWidth;
-    }
-    for (int i = numPointsLeftWall+numPointsRightWall; i< numPointsLeftWall+numPointsRightWall+numPointsFrontWall; i++){
-        roomBouncePoints[i].y = parametersFDN.roomHeight;
-    }
-    
-    for (int i = numPointsFrontWall+numPointsLeftWall+numPointsRightWall; i<numTaps; i++){
-        roomBouncePoints[i].y = 0;
-    }
-    
-//    for (int i = 0; i<numTaps ; i++){
-//        printf("Room bounce pt : %d is x %f y %f \n", i, roomBouncePoints[i].x, roomBouncePoints[i].y);
+        float w =parametersFDN.soundSourceLoc.x;
+        float h = parametersFDN.soundSourceLoc.y;
+        
+        for (int i = 0; i < NUMTAPSSTD/2; i++){
+            float angle = i * (angleGap);
+            float deltaAngle = uni(rd);
+            angle += deltaAngle;
+            float m = 1.0f/tan(angle * M_PI / 180.f);
+
+            //y = mx + 0
+            Point2d pointArray[4] = {Point2d(yBot/m, yBot),
+                Point2d(yTop/m, yTop),
+                Point2d(xLeft, m*xLeft),
+                Point2d(xRight, m*xRight)};
+            
+            for (int j = 0; j< 4; j++){
+                float xO = pointArray[j].x + parametersFDN.soundSourceLoc.x;
+                if (xO > parametersFDN.roomWidth or xO < 0.0f){
+                    pointArray[j].mark = false;
+                    continue;
+                }
+                float yO = pointArray[j].y + parametersFDN.soundSourceLoc.y;
+                if (yO > parametersFDN.roomHeight or yO < 0.0f){
+                    pointArray[j].mark = false;
+                    continue;
+                }
+                if (pointArray[j].mark == true){
+                    //check for x value
+                    if (pointArray[j].x >= 0){
+                        roomBouncePoints[i].x = pointArray[j].x + w;
+                        roomBouncePoints[i].y = pointArray[j].y + h;
+                    }
+                    else{
+                        roomBouncePoints[i+NUMTAPSSTD/2].x = pointArray[j].x + w;
+                        roomBouncePoints[i+NUMTAPSSTD/2].y = pointArray[j].y + h;
+                    }
+                }
+            }
+        }
+//    for(int i = 0; i < NUMTAPSSTD; i++){
+//        printf("Room bounce points %f %f for angle: %f \n", roomBouncePoints[i].x, roomBouncePoints[i].y, i * (360.0/NUMTAPSSTD));
 //    }
 }
+
+        
+
+//inline void FDN::setRoomBouncePoints(){
+//    std::random_device rd;     // only used once to initialise (seed) engine
+//    std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+//    std::uniform_real_distribution<float> uniW(0,parametersFDN.roomWidth); // guaranteed unbiased
+//    std::uniform_real_distribution<float> uniH(0,parametersFDN.roomHeight);
+//    
+//    for (int i = 0; i<NUMTAPSSTD; i++){
+//        float x = (float) uniW(rng);
+//        float y = (float) uniH(rng);
+//        
+//        roomBouncePoints[i] = Point2d(x,y);
+//    }
+//    
+//    
+//    int numPointsLeftWall = numTaps*parametersFDN.roomWidth/(parametersFDN.roomWidth+parametersFDN.roomHeight)/2;
+//    int numPointsRightWall = numPointsLeftWall;
+//    int numPointsFrontWall = (numTaps- (numPointsLeftWall*2))/2;
+//   // int numPointsBackWall = numTaps - (numPointsFrontWall + numPointsLeftWall + numPointsRightWall);
+//    
+//    for (int i = 0; i < numPointsLeftWall; i++){
+//        roomBouncePoints[i].x = 0.0f;
+//    }
+//    
+//    for(int i = numPointsLeftWall; i< numPointsLeftWall+numPointsRightWall; i++){
+//        roomBouncePoints[i].x =parametersFDN.roomWidth;
+//    }
+//    for (int i = numPointsLeftWall+numPointsRightWall; i< numPointsLeftWall+numPointsRightWall+numPointsFrontWall; i++){
+//        roomBouncePoints[i].y = parametersFDN.roomHeight;
+//    }
+//    
+//    for (int i = numPointsFrontWall+numPointsLeftWall+numPointsRightWall; i<numTaps; i++){
+//        roomBouncePoints[i].y = 0;
+//    }
+//    
+////    for (int i = 0; i<numTaps ; i++){
+////        printf("Room bounce pt : %d is x %f y %f \n", i, roomBouncePoints[i].x, roomBouncePoints[i].y);
+////    }
+//}
 
 inline float FDN::getDistance(float x1, float y1, float x2, float y2){
     float xDist = x2 - x1;
@@ -693,7 +751,6 @@ void FDN::setSingleTapDelay(){
 }
 
 
-//Simplify this
 void FDN::setTempPoints(){
     
     float yBot = 0.0f-parametersFDN.listenerLoc.y;
