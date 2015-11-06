@@ -23,6 +23,7 @@ public:
     FDN reverb1;
     FDN reverb2;
     FDN* backReverb;
+    
     float roomSize = 0.15;
     float widthRatio = 0.5;
     float RT60 = 0.7f;

@@ -12,14 +12,15 @@
 		2C581E431BBD8076002C6BA4 /* piano.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2C581E421BBD8076002C6BA4 /* piano.mp3 */; };
 		2C581E471BBD830A002C6BA4 /* guitar.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2C581E461BBD830A002C6BA4 /* guitar.mp3 */; };
 		2C581E491BBD8447002C6BA4 /* allofthestars.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2C581E481BBD8447002C6BA4 /* allofthestars.mp3 */; };
-		2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */; settings = {ASSET_TAGS = (); }; };
-		2CD0C0A31BE7A9E1009D9971 /* SecondOrderFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */; settings = {ASSET_TAGS = (); }; };
-		2CD0C0A61BE7B256009D9971 /* CombFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A41BE7B256009D9971 /* CombFilter.cpp */; settings = {ASSET_TAGS = (); }; };
+		2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */; };
+		2CD0C0A31BE7A9E1009D9971 /* SecondOrderFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */; };
+		2CD0C0A61BE7B256009D9971 /* CombFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A41BE7B256009D9971 /* CombFilter.cpp */; };
 		2CE69B8B1BC5068100072C04 /* SingleTapDelay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE69B891BC5068100072C04 /* SingleTapDelay.cpp */; };
 		2CE69B941BCCE35F00072C04 /* person.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B931BCCE35F00072C04 /* person.png */; };
 		2CE69B9A1BCCE50300072C04 /* Speaker.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B991BCCE50300072C04 /* Speaker.png */; };
 		2CE69B9C1BCCE53800072C04 /* SpeakerTouched.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B9B1BCCE53800072C04 /* SpeakerTouched.png */; };
 		2CE69B9E1BCCE61500072C04 /* tiles.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B9D1BCCE61500072C04 /* tiles.jpg */; };
+		3A023E021BEC8315004B6494 /* RoomRayModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3A023E001BEC8315004B6494 /* RoomRayModel.cpp */; };
 		3A8EFDE91BE0850E00EBA82D /* Point2d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3A8EFDE71BE0850E00EBA82D /* Point2d.cpp */; };
 		3A9464271BA6BB1F00818778 /* QuadraturePhaseEnvelopeFollower.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3A9464251BA6BB1F00818778 /* QuadraturePhaseEnvelopeFollower.cpp */; };
 		3ACBFF941B9934EE0077484B /* FDN.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3ACBFF921B9934EE0077484B /* FDN.cpp */; };
@@ -97,6 +98,8 @@
 		2CE69B991BCCE50300072C04 /* Speaker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Speaker.png; sourceTree = "<group>"; };
 		2CE69B9B1BCCE53800072C04 /* SpeakerTouched.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SpeakerTouched.png; sourceTree = "<group>"; };
 		2CE69B9D1BCCE61500072C04 /* tiles.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = tiles.jpg; sourceTree = "<group>"; };
+		3A023E001BEC8315004B6494 /* RoomRayModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RoomRayModel.cpp; sourceTree = "<group>"; };
+		3A023E011BEC8315004B6494 /* RoomRayModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RoomRayModel.h; sourceTree = "<group>"; };
 		3A8EFDE71BE0850E00EBA82D /* Point2d.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Point2d.cpp; sourceTree = "<group>"; };
 		3A8EFDE81BE0850E00EBA82D /* Point2d.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Point2d.hpp; sourceTree = "<group>"; };
 		3A9464251BA6BB1F00818778 /* QuadraturePhaseEnvelopeFollower.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QuadraturePhaseEnvelopeFollower.cpp; sourceTree = "<group>"; };
@@ -207,6 +210,8 @@
 				2CD0C0A21BE7A9E1009D9971 /* SecondOrderFilter.hpp */,
 				2CD0C0A41BE7B256009D9971 /* CombFilter.cpp */,
 				2CD0C0A51BE7B256009D9971 /* CombFilter.hpp */,
+				3A023E001BEC8315004B6494 /* RoomRayModel.cpp */,
+				3A023E011BEC8315004B6494 /* RoomRayModel.h */,
 			);
 			name = AudioProcessing;
 			sourceTree = "<group>";
@@ -445,6 +450,7 @@
 				3ACBFF9C1B9941530077484B /* BiQuadFilter.cpp in Sources */,
 				4C7C680A16F1609800721E60 /* AELimiter.m in Sources */,
 				3A9464271BA6BB1F00818778 /* QuadraturePhaseEnvelopeFollower.cpp in Sources */,
+				3A023E021BEC8315004B6494 /* RoomRayModel.cpp in Sources */,
 				3ACBFF9D1B9941530077484B /* FirstOrderFilter.cpp in Sources */,
 				3A8EFDE91BE0850E00EBA82D /* Point2d.cpp in Sources */,
 				4C7C680B16F1609800721E60 /* AELimiterFilter.m in Sources */,
