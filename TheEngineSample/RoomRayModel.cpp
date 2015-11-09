@@ -25,9 +25,12 @@ void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientatio
         float randFlt = (float)rand() / (float)RAND_MAX;
         float distance = (((float)i+randFlt) * pointSpacing);
         bouncePoints[i] = wallStart + wallOrientation.scalarMul(distance);
+       // printf("BouncePoints : %f %f \n", bouncePoints[i].x, bouncePoints[i].y);
     }
 }
 
+
+//Raylength isnt used?
 void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* rayLengths, size_t numTaps, Point2d listenerLocation, Point2d soundSourceLocation, Point2d* bouncePoints){
     
     assert(numCorners > 0); // the geometry must be initialised before now
@@ -38,10 +41,11 @@ void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* ray
     size_t numTapsOnWall[RRM_MAX_CORNERS];
     size_t totalTaps = 0;
     for (size_t i = 0; i < RRM_MAX_CORNERS; i++) {
-        numTapsOnWall[i] = (size_t)floor(wallLengths[i]/totalWallLength);
+        numTapsOnWall[i] = (size_t)floor(wallLengths[i]/totalWallLength * (float)numTaps);
         totalTaps += numTapsOnWall[i];
     }
     
+    printf("Total taps is: %lu \n", totalTaps);
     
     // if the number of taps now assigned isn't enough, add one tap to
     // each wall until we have the desired number
@@ -49,6 +53,7 @@ void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* ray
     while (totalTaps < numTaps) {
         numTapsOnWall[i]++;
         i++;
+        totalTaps++;
         if (i == RRM_MAX_CORNERS) i = 0;
     }
     
@@ -58,6 +63,8 @@ void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* ray
     size_t j = 0;
     size_t k = 0;
     for (size_t i = 0; i < numCorners; i++) {
+        //must be corner i-1 or shift the corner values firston
+      //  printf(" i = %lu, Wall orientation : %f %f, wallStart : %f %f, wallLength : %f TapsOnWall : %lu\n",i, wallOrientations[i].x, wallOrientations[i].y, corners[i].x, corners[i].y, wallLengths[i], numTapsOnWall[i] );
         setBouncePoints(&bouncePoints[j], wallOrientations[i], corners[i], wallLengths[i], numTapsOnWall[i]);
         j += numTapsOnWall[i];
         
@@ -66,6 +73,8 @@ void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* ray
             Point2d sourceToBouncePoint = (soundSourceLocation - bouncePoints[k]).normalize();
             Point2d wallNormal = wallOrientations[i].normal();
             inGainScale[k] = wallNormal.dotProduct(sourceToBouncePoint);
+          //  printf("inGainScale: %lu is %f\n", k, inGainScale[k]);
+            //TODO: does ingainscale have to be +ve?
             k++;
         }
     }
@@ -129,4 +138,22 @@ void RoomRayModel::setRoomGeometry(Point2d* corners, size_t numCorners){
     wallOrientations[0].normalize();
     
     assert(totalWallLength > 0.0f);
+    
+    //change the corner indexes to match the wallOrientation indexes for setLocation method
+    Point2d lastCorner = this->corners[numCorners-1];
+    Point2d prevCorner = this->corners[0];
+    Point2d currCorner;
+    for (size_t i = 1; i<numCorners; i++){
+        currCorner = this->corners[i];
+        this->corners[i] = prevCorner;
+        prevCorner = currCorner;
+    }
+    this->corners[0] = lastCorner;
+    
+    
+//    printf("Total wall length: %f\n", totalWallLength);
+//    for (int i = 0; i<numCorners; i++){
+//        printf("Wall orientation %d is %f %f \n", i, wallOrientations[i].x, wallOrientations[i].y);
+//        printf("Corners : %f %f \n", corners[i].x, corners[i].y);
+//    }
 }

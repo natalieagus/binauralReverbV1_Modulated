@@ -57,10 +57,7 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     
     // copy the filtered input so that we can process it without affecting the original value
 	float xn = *pInput;
-
-
-    // attenuate the input
-    xn *= inputAttenuation;
+    
     //    printf("Xn is: %f  inputOriginal is: %f\n", xn, *pInput);
     //multiply with listener volume
 
@@ -76,13 +73,26 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     // scale the output taps according to the feedBackTapGains
     vDSP_vmul(feedbackTapGains, 1, outputsPF, 1, outputsPF, 1, numTaps);
     
+    
+    // apply a first order high-shelf filter to the feedback path
+    //
+    // This filter structure is direct form 2 from figure 14 in section 1.1.6
+    // of Digital Filters for Everyone by Rusty Alred, second ed.
+    //
+    // t = outputsPF + (a1 * z1);
+    
+    vDSP_vma (a1, 1, z1, 1, outputsPF + numUncirculatedTaps, 1, t, 1, numDelays);
+    
+    //Processing outputs
+    //TODO Add output gain here
+    vDSP_vmul(outputGains, 1, outputsPF, 1, outputsPF, 1, numTaps);
     processDirectRays(pInput, directRaysOutput);
     processTankOut(fdnTankOutsNew);
-  
+    
     float fdnTankOutLeft[CHANNELS] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,};
     float fdnTankOutRight[CHANNELS] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,};
     filterChannels(fdnTankOutsNew, directRaysOutput, fdnTankOutLeft, fdnTankOutRight);
-
+    
     float reverbOut[2] = {0.0f, 0.0f};
     
     //add another delay here, before mixing them together, for left tank out, add delays on channel 0-3, for right tank out, add delays on channel 4-7
@@ -93,13 +103,7 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     *pOutputL = (directRaysOutput[0]*directMix - reverbOut[0]);
     *pOutputR = (directRaysOutput[1]*directMix - reverbOut[1]);
     
-    // apply a first order high-shelf filter to the feedback path
-    //
-    // This filter structure is direct form 2 from figure 14 in section 1.1.6
-    // of Digital Filters for Everyone by Rusty Alred, second ed.
-    //
-    // t = outputsPF + (a1 * z1);
-    vDSP_vma (a1, 1, z1, 1, outputsPF + numUncirculatedTaps, 1, t, 1, numDelays);
+    //Continue processing reverb
     // outputsAF = b0*t + b1*z1;
     vDSP_vmma(b0, 1, t, 1, b1, 1, z1, 1, outputsAF + numUncirculatedTaps, 1, numDelays);
     // z1 = t;
@@ -162,11 +166,10 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     //    vDSP_vsub(outputsAF, 2, outputsAF + 1, 2, inputs + 1, 2, DELAYUNITS);
     //}
     
-    // mix new input together with feedback input
+    // scale and mix new input together with feedback input
     float scaledInput[NUMTAPSSTD] = {};
-    vDSP_vsmul(listenerVol, 1, &xn, scaledInput, 1, numDelays);
+    vDSP_vsmul(inputGains, 1, &xn, scaledInput, 1, numDelays);
     vDSP_vadd(inputs, 1, scaledInput, 1, inputs, 1, numDelays);
-  //  vDSP_vsadd(inputs, 1, &xn, inputs, 1, numDelays);
     
     // feedback the mixed audio into the tank, shifting the feedback path over to the next unit
     size_t j;//,k;
@@ -468,7 +471,8 @@ void FDN::setParameterSafe(Parameter params){
     
     //Must be in this order
    // setRoomBouncePoints();
-    setRoomBouncePointsVer2();
+   // setRoomBouncePointsVer2();
+    configureRoomRayModel();
     setDelayChannels();
     setDelayTimes();
     setTempPoints();
@@ -476,13 +480,14 @@ void FDN::setParameterSafe(Parameter params){
     setDirectDelayTimes();
     setDirectRayAngles();
     
+    
     for (int i = 0; i <NUMTAPSSTD; i++){
         delayTimes[i] = delayTimesNew[i];
     }
     
     setSingleTapDelay();
     setFilters();
-    setGainConstants();
+
     
     int totalDelayTime = 0;
     for(int i = numUncirculatedTaps; i < numTaps; i++) totalDelayTime += delayTimes[i];
@@ -819,35 +824,22 @@ void FDN::calculateAdditionalDelays(){
     }
 }
 
-void FDN::setGainConstants(){
-    float rd = REFERENCEDISTANCE;
-    //directMix = parametersFDN.directGain * 1.0f / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
-    directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
-//    //Clipping
-//    if (directMix > 1.0f){
-//        directMix = 1.0f;
-//    }
-    setListenerVolume();
 
-}
 
-void FDN::setListenerVolume(){
-    //calculate volume to the middle of the head
-    totalListenerVol = 0.0f;
-    for (int i = 0; i < NUMTAPSSTD; i++){
-        float rd = REFERENCEDISTANCE;
-       // listenerVol[i] = parametersFDN.reverbGain * 1.0f /  parametersFDN.listenerLoc.distance(roomBouncePoints[i]);
-       listenerVol[i] = rd /  parametersFDN.listenerLoc.distance(roomBouncePoints[i]);
-        //clipping
-        if (listenerVol[i] > 1.0f){
-            listenerVol[i] = 1.0f;
-        }
-       //  printf("Listener vol i %d is : %f dist is %f \n",i, listenerVol[i], parametersFDN.listenerLoc.distance(roomBouncePoints[i]));
-        totalListenerVol += powf(listenerVol[i], 2.f);
+void FDN::configureRoomRayModel(){
+    
+    Point2d corners[4] = {Point2d(0.f,0.f), Point2d(parametersFDN.roomWidth, 0.f), Point2d(parametersFDN.roomWidth,parametersFDN.roomHeight), Point2d(0.f, parametersFDN.roomHeight)};
+    for (int i = 0; i < 4; i++){
+        printf("Corners are: %f %f \n", corners[i].x, corners[i].y);
     }
-    totalListenerVol = sqrt(totalListenerVol);
-    reverbGainBackToOne = 1.0f/totalListenerVol;
-    //printf("Reverb Gain Back to One is: %f \n", reverbGainBackToOne);
+    roomRayModel.setRoomGeometry(corners, 4);
+    float rl[NUMTAPSSTD];
+    roomRayModel.setLocation(inputGains, outputGains, rl, NUMTAPSSTD, parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints);
+    float rd = REFERENCEDISTANCE;
+    directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
+//    for(int i = 0; i < NUMTAPSSTD; i++){
+//        printf("Room bounce points %f %f \n", roomBouncePoints[i].x, roomBouncePoints[i].y);
+//    }
     
 }
 

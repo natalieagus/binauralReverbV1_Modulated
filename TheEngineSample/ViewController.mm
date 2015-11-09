@@ -316,10 +316,10 @@ static int kInputChannelsChangedContext;
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch ( section ) {
         case 0:
-            return 5;
+            return 3;
             
         case 1:
-            return 4;
+            return 1;
             
         case 2:
             return 6;
@@ -406,16 +406,6 @@ static int kInputChannelsChangedContext;
                     break;
                 }
                 case 1: {
-                    cell.textLabel.text = @"reverb2Gain";
-                    UISlider *bell1Slider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
-                    bell1Slider.minimumValue = 0.0;
-                    bell1Slider.maximumValue = 1.0;
-                    bell1Slider.value = 1.0;
-                    [bell1Slider addTarget:self action:@selector(bell1GainChanged:) forControlEvents:UIControlEventValueChanged];
-                    cell.accessoryView = bell1Slider;
-                    break;
-                }
-                case 2: {
                     cell.textLabel.text = @"1000 Hz gain";
                     UISlider *bell2Slider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
                     bell2Slider.minimumValue = 0.1;
@@ -426,18 +416,7 @@ static int kInputChannelsChangedContext;
                     cell.accessoryView = bell2Slider;
                     break;
                 }
-                case 3: {
-                    cell.textLabel.text = @"reverbGain";
-                    UISlider *bell3Slider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
-                    bell3Slider.minimumValue = 0.0;
-                    bell3Slider.maximumValue = 1.0;
-                    bell3Slider.value = 0.5;
-                    [bell3Slider setContinuous:NO];
-                    [bell3Slider addTarget:self action:@selector(bell3GainChanged:) forControlEvents:UIControlEventValueChanged];
-                    cell.accessoryView = bell3Slider;
-                    break;
-                }
-                case 4: {
+                case 2: {
                     cell.textLabel.text = @"Low-pass Frequency";
                     UISlider *lowpassSlider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
                     lowpassSlider.minimumValue = 3000;
@@ -474,35 +453,11 @@ static int kInputChannelsChangedContext;
             cell.accessoryView = view;
             switch ( indexPath.row ) {
                 case 0: {
-                    cell.textLabel.text = @"edSheeran";
-                    onSwitch.on = !_loop2.channelIsMuted;
-                    slider.value = _loop2.volume;
-                    [onSwitch addTarget:self action:@selector(loop2SwitchChanged:) forControlEvents:UIControlEventValueChanged];
-                    [slider addTarget:self action:@selector(loop2VolumeChanged:) forControlEvents:UIControlEventValueChanged];
-                    break;
-                }
-                case 1: {
-                    cell.textLabel.text= @"Robin";
-                    onSwitch.on = !_loop1.channelIsMuted;
-                    slider.value = _loop1.volume;
-                    [onSwitch addTarget:self action:@selector(loop1SwitchChanged:) forControlEvents:UIControlEventValueChanged];
-                    [slider addTarget:self action:@selector(loop1VolumeChanged:) forControlEvents:UIControlEventValueChanged];
-                    break;
-                }
-                case 2: {
-                    cell.textLabel.text= @"Piano";
+                    cell.textLabel.text= @"Music";
                     onSwitch.on = !_loop3.channelIsMuted;
                     slider.value = _loop3.volume;
                     [onSwitch addTarget:self action:@selector(loop3SwitchChanged:) forControlEvents:UIControlEventValueChanged];
                     [slider addTarget:self action:@selector(loop3VolumeChanged:) forControlEvents:UIControlEventValueChanged];
-                    break;
-                }
-                case 3: {
-                    cell.textLabel.text= @"Guitar";
-                    onSwitch.on = !_loop4.channelIsMuted;
-                    slider.value = _loop4.volume;
-                    [onSwitch addTarget:self action:@selector(loop4SwitchChanged:) forControlEvents:UIControlEventValueChanged];
-                    [slider addTarget:self action:@selector(loop4VolumeChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
             }

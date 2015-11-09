@@ -26,6 +26,7 @@ FDN: a feedback delay network reverberator
 #import "SingleTapDelay.h"
 #import "Point2d.hpp"
 #import "Parameter.hpp"
+#import "RoomRayModel.h"
 
 class FDN
 {
@@ -43,14 +44,15 @@ public:
 
 protected:
     
+    RoomRayModel roomRayModel;
+    float inputGains[NUMTAPSSTD];
+    float outputGains[NUMTAPSSTD];
+    
+    void configureRoomRayModel();
+    
     Parameter parametersFDN;
     Parameter newParametersFDN;
     void setParameterSafe(Parameter params);
-    
-    void setListenerVolume();
-    float totalListenerVol;
-    float listenerVol[NUMTAPSSTD];
-    float reverbGainBackToOne = 1.0f;
     
     float directDelayTimes[2]; //unit = FREQ * seconds
     float delayTimesNew[NUMTAPSSTD]; //unit = FREQ * seconds
@@ -68,10 +70,6 @@ protected:
     void setRoomBouncePointsVer2();
    // Point2d roomBouncePoints2[NUMTAPSSTD];
 
-    float directDistanceInMetres;
-    float roomSA;
-    void setGainConstants();
-    void normaliseGain();
 
     //To calculate delays
     //Method to calculate delay times based in randomised 72 points in the room, output to delayTimes[NUMTAPSSTD]
@@ -149,7 +147,7 @@ protected:
 	float inputs[NUMDELAYSSTD];
 	float outputsPF[NUMTAPSSTD];
     float outputsAF[NUMTAPSSTD];
-    float outTapSigns[NUMTAPSSTD];
+    float outTapSigns[NUMTAPSSTD]; //change to outTapGains
 	float feedbackTapGains[NUMTAPSSTD];
     //float outTapTemp[NUMDELAYSSTANDARD][OUTPUTTAPSPERDELAY];
     //int fbTapIdxBase[NUMDELAYSSTANDARD];
