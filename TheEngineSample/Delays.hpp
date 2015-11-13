@@ -14,13 +14,19 @@ typedef struct Delays {
     Delays(){
         delay = 0.0f;
         index = 0;
+        inputGainIndex = 0;
+        outputGainIndex = 0;
     };
-    Delays(float delay, unsigned idx){
+    Delays(float delay, int idx, int inputGain, int outputGain){
         this->delay = delay;
         this->index = idx;
+        this->inputGainIndex = inputGain;
+        this->outputGainIndex = outputGain;
     }
     float delay;
-    size_t index;
+    int index;
+    int inputGainIndex;
+    int outputGainIndex;
     
 } Delays;
 
