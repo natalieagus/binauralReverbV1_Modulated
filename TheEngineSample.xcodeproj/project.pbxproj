@@ -14,7 +14,7 @@
 		2C581E491BBD8447002C6BA4 /* allofthestars.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 2C581E481BBD8447002C6BA4 /* allofthestars.mp3 */; };
 		2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */; };
 		2CD0C0A31BE7A9E1009D9971 /* SecondOrderFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */; };
-		2CD0C0A61BE7B256009D9971 /* CombFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A41BE7B256009D9971 /* CombFilter.cpp */; };
+		2CE0CEF21BF572BD00E9699E /* Delays.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE0CEF01BF572BD00E9699E /* Delays.cpp */; settings = {ASSET_TAGS = (); }; };
 		2CE69B8B1BC5068100072C04 /* SingleTapDelay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE69B891BC5068100072C04 /* SingleTapDelay.cpp */; };
 		2CE69B941BCCE35F00072C04 /* person.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B931BCCE35F00072C04 /* person.png */; };
 		2CE69B9A1BCCE50300072C04 /* Speaker.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B991BCCE50300072C04 /* Speaker.png */; };
@@ -90,8 +90,8 @@
 		2C7CD63B1BE0C920000F26E2 /* Parameter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Parameter.hpp; sourceTree = "<group>"; };
 		2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SecondOrderFilter.cpp; sourceTree = "<group>"; };
 		2CD0C0A21BE7A9E1009D9971 /* SecondOrderFilter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SecondOrderFilter.hpp; sourceTree = "<group>"; };
-		2CD0C0A41BE7B256009D9971 /* CombFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CombFilter.cpp; sourceTree = "<group>"; };
-		2CD0C0A51BE7B256009D9971 /* CombFilter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CombFilter.hpp; sourceTree = "<group>"; };
+		2CE0CEF01BF572BD00E9699E /* Delays.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Delays.cpp; sourceTree = "<group>"; };
+		2CE0CEF11BF572BD00E9699E /* Delays.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Delays.hpp; sourceTree = "<group>"; };
 		2CE69B891BC5068100072C04 /* SingleTapDelay.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SingleTapDelay.cpp; sourceTree = "<group>"; };
 		2CE69B8A1BC5068100072C04 /* SingleTapDelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SingleTapDelay.h; sourceTree = "<group>"; };
 		2CE69B931BCCE35F00072C04 /* person.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = person.png; sourceTree = "<group>"; };
@@ -196,6 +196,8 @@
 				3ACBFF9B1B9941530077484B /* FourthOrderFilter.h */,
 				3ACBFF921B9934EE0077484B /* FDN.cpp */,
 				3ACBFF931B9934EE0077484B /* FDN.h */,
+				2CE0CEF01BF572BD00E9699E /* Delays.cpp */,
+				2CE0CEF11BF572BD00E9699E /* Delays.hpp */,
 				3ACBFFA01B9945370077484B /* MultiLevelBiQuadFilter.cpp */,
 				3ACBFFA11B9945370077484B /* MultiLevelBiQuadFilter.h */,
 				3A9464251BA6BB1F00818778 /* QuadraturePhaseEnvelopeFollower.cpp */,
@@ -208,8 +210,6 @@
 				2C7CD63B1BE0C920000F26E2 /* Parameter.hpp */,
 				2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */,
 				2CD0C0A21BE7A9E1009D9971 /* SecondOrderFilter.hpp */,
-				2CD0C0A41BE7B256009D9971 /* CombFilter.cpp */,
-				2CD0C0A51BE7B256009D9971 /* CombFilter.hpp */,
 				3A023E001BEC8315004B6494 /* RoomRayModel.cpp */,
 				3A023E011BEC8315004B6494 /* RoomRayModel.h */,
 			);
@@ -445,7 +445,6 @@
 				3ACBFFA21B9945370077484B /* MultiLevelBiQuadFilter.cpp in Sources */,
 				4C0C249D1599FADD00D23E13 /* ViewController.mm in Sources */,
 				4C0C24CC159A246500D23E13 /* TPOscilloscopeLayer.m in Sources */,
-				2CD0C0A61BE7B256009D9971 /* CombFilter.cpp in Sources */,
 				4C7C680916F1609800721E60 /* AEExpanderFilter.m in Sources */,
 				3ACBFF9C1B9941530077484B /* BiQuadFilter.cpp in Sources */,
 				4C7C680A16F1609800721E60 /* AELimiter.m in Sources */,
@@ -456,6 +455,7 @@
 				4C7C680B16F1609800721E60 /* AELimiterFilter.m in Sources */,
 				4C7C680C16F1609800721E60 /* AEMixerBuffer.m in Sources */,
 				4C7C680D16F1609800721E60 /* AEPlaythroughChannel.m in Sources */,
+				2CE0CEF21BF572BD00E9699E /* Delays.cpp in Sources */,
 				2CD0C0A31BE7A9E1009D9971 /* SecondOrderFilter.cpp in Sources */,
 				3ACBFF941B9934EE0077484B /* FDN.cpp in Sources */,
 				4C7C680E16F1609800721E60 /* AERecorder.m in Sources */,

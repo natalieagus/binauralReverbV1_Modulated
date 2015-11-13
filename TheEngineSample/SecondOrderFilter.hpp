@@ -15,7 +15,7 @@ class SecondOrderFilter{
 
 public:
     SecondOrderFilter();
-    void setNotchFilter(float notch, float fc);
+    void setNotchFilter(float notch, float fs, float bw);
     float process(float input);
     void setResonatorBlock(float G, float fs, float fc);
     void setReflectionBlock(float G, float fs, float fc); //Magnitude in dB, sampling frequency, and centre frequency

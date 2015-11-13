@@ -27,6 +27,8 @@ FDN: a feedback delay network reverberator
 #import "Point2d.hpp"
 #import "Parameter.hpp"
 #import "RoomRayModel.h"
+#import "Delays.hpp"
+
 
 class FDN
 {
@@ -43,6 +45,9 @@ public:
     bool parameterNeedsUpdate;
 
 protected:
+    
+    Delays reverbDelayValues[NUMTAPSSTD];
+    void shuffleDelays();
     
     RoomRayModel roomRayModel;
     float inputGains[NUMTAPSSTD];
@@ -85,6 +90,7 @@ protected:
     //Method to sort delay times
     void sortDelayTimes();
    // void quickSort(int arr[], int arr2[], int left, int right);
+    void shortenDelayTimes();
     
     //To handle direct Rays
     SingleTapDelay directRays[2];

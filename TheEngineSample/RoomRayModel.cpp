@@ -45,7 +45,7 @@ void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* ray
         totalTaps += numTapsOnWall[i];
     }
     
-    printf("Total taps is: %lu \n", totalTaps);
+  //  printf("Total taps is: %lu \n", totalTaps);
     
     // if the number of taps now assigned isn't enough, add one tap to
     // each wall until we have the desired number

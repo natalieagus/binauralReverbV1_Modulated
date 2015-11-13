@@ -23,6 +23,12 @@ SingleTapDelay::SingleTapDelay(){
 // process one sample at a time
 // use processBuffer() if possible, to improve efficiency
 float SingleTapDelay::process(float input){
+    
+    if (zeroDelay){
+       // printf("zero delay!");
+        return input;
+    }
+    
     if (needsUpdate)
         updateLength();
     
@@ -83,7 +89,11 @@ void SingleTapDelay::processBuffer(float *input, float *output, size_t numFrames
 void SingleTapDelay::setTimeSafe(float seconds){
  //  printf("seconds: %f \n", seconds);
     assert(seconds >= 0);
-  //  printf("seconds: %f \n", seconds);
+ //   printf("seconds: %f \n", seconds);
+    if (fabs(0.0f - seconds) < 0.0000001f){
+       // printf("Zero delay is true \n");
+        zeroDelay = true;
+    }
     nextEndMarker = seconds*SAMPLE_RATE_F;
     lengthInSamples = nextEndMarker;
     ///printf("MAX DELAY LINE: %d \n", MAX_DELAY_LINE);

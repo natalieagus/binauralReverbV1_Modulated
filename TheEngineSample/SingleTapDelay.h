@@ -29,6 +29,7 @@ private:
     size_t nextEndMarker;
     size_t lengthInSamples;
     bool needsUpdate;
+    bool zeroDelay;
 };
 
 #endif /* SingleTapDelay_h */

@@ -194,6 +194,7 @@ inline void FDN::addReverbDelay(float* fdnLeft, float*fdnRight){
 inline void FDN::processDirectRays(float* input, float* directRaysOutput){
     directRaysOutput[0] = directRays[0].process(*input);
     directRaysOutput[1] = directRays[1].process(*input);
+   // printf("directRaysout : %f %f \n", directRaysOutput[0], directRaysOutput[1]);
 }
 
 
@@ -472,9 +473,14 @@ void FDN::setParameterSafe(Parameter params){
     //Must be in this order
    // setRoomBouncePoints();
    // setRoomBouncePointsVer2();
+    
     configureRoomRayModel();
     setDelayChannels();
     setDelayTimes();
+    
+    shortenDelayTimes();
+    shuffleDelays();
+    
     setTempPoints();
     calculateAdditionalDelays();
     setDirectDelayTimes();
@@ -502,6 +508,36 @@ void FDN::setParameterSafe(Parameter params){
     setHighPassCutoff(hpfCutoffHZ / (SAMPLINGRATEF*0.5));
     
     resetTapAttenuation(parametersFDN.RT60);
+}
+
+void FDN::shortenDelayTimes(){
+    float minimum = MAXFLOAT;
+    
+    for (int i = 0; i < 2; i++){
+        float d = directDelayTimes[i] * SAMPLINGRATEF;
+        if (d < minimum){
+            minimum = d;
+        }
+    }
+    
+    //substract each delay with min
+    directDelayTimes[0] -= minimum/SAMPLINGRATEF;
+    directDelayTimes[1] -= minimum/SAMPLINGRATEF;
+    
+
+  //  printf("Minimum is: %f\n", minimum);
+    for (int i = 0; i < numDelays; i++){
+        delayTimesNew[i] -= minimum;
+    }
+    
+    //print out
+//    for (int i = 0; i < 2; i++){
+//        printf("Direct delay times : %f \n", directDelayTimes[i]);
+//    }
+//    for (int i = 0; i < numDelays; i++){
+//        printf("Reverb delay times: %f \n", delayTimesNew[i]);
+//    }
+    
 }
 
 inline int FDN::getRandom(){
@@ -631,6 +667,7 @@ inline void FDN::setDelayTimes(){
             float td = (d1 + d2);
             float delaySeconds = td / SOUNDSPEED;
             delayTimesNew[i] = delaySeconds * SAMPLINGRATEF;
+            reverbDelayValues[i] = Delays(delayTimesNew[i],i);
         }
         else{
             //use left ear
@@ -639,11 +676,45 @@ inline void FDN::setDelayTimes(){
             float td = (d1 + d2);
             float delaySeconds = td / SOUNDSPEED;
             delayTimesNew[i] = delaySeconds * SAMPLINGRATEF;
+            reverbDelayValues[i] = Delays(delayTimesNew[i],i);
         }
-
+      //  printf("Delaytimes: %d, is %f\n", i, delayTimesNew[i]);
     }
+    
 }
 
+void FDN::shuffleDelays(){
+    
+    for (int  i = 0; i<10; i++){
+    std::random_shuffle(reverbDelayValues, reverbDelayValues + numDelays);
+    }
+
+
+//    for (int i = 0; i < numDelays; i++){
+//        printf("previous channel %d: %lu \n", i, delayTimesChannel[i]);
+//    }
+    
+    size_t delayTimesChannelNew[NUMTAPSSTD] = {};
+    
+    //SHUFFLE accordingly
+    for (int i = 0; i <NUMTAPSSTD; i++){
+        size_t ch = reverbDelayValues[i].index;
+        delayTimesChannelNew[i] = delayTimesChannel[ch];
+    }
+    
+    //copy over
+    for (int i = 0; i<NUMTAPSSTD; i++){
+        delayTimesChannel[i] = delayTimesChannelNew[i];
+        delayTimesNew[i] = reverbDelayValues[i].delay;
+    }
+    
+    for (int i = 0; i < numDelays; i++){
+        printf("Shuffled delay #%lu, is %f \n", reverbDelayValues[i].index, reverbDelayValues[i].delay);
+       // printf("Channel : %lu\n", delayTimesChannelNew[i]);
+    }
+//
+    
+}
 inline void FDN::setDirectDelayTimes(){
     //Calculate delay from source to receiver
     float directDelayLeft = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocLeftEar) / SOUNDSPEED;
@@ -829,9 +900,9 @@ void FDN::calculateAdditionalDelays(){
 void FDN::configureRoomRayModel(){
     
     Point2d corners[4] = {Point2d(0.f,0.f), Point2d(parametersFDN.roomWidth, 0.f), Point2d(parametersFDN.roomWidth,parametersFDN.roomHeight), Point2d(0.f, parametersFDN.roomHeight)};
-    for (int i = 0; i < 4; i++){
-        printf("Corners are: %f %f \n", corners[i].x, corners[i].y);
-    }
+//    for (int i = 0; i < 4; i++){
+//        printf("Corners are: %f %f \n", corners[i].x, corners[i].y);
+//    }
     roomRayModel.setRoomGeometry(corners, 4);
     float rl[NUMTAPSSTD];
     roomRayModel.setLocation(inputGains, outputGains, rl, NUMTAPSSTD, parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints);
@@ -842,6 +913,10 @@ void FDN::configureRoomRayModel(){
 //    }
     
 }
+
+//Randomise delay times
+//Use the matlab difference to see what types of filter to use
+//Bell and highshelf to see which frequency point is useful
 
 
 
