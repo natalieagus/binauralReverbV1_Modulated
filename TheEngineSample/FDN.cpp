@@ -62,7 +62,7 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     //multiply with listener volume
 
     
-    float fdnTankOutsNew[CHANNELS] = {0.0f, 0.0f, 0.0f, 0.0f,0.0f, 0.0f, 0.0f, 0.0f};
+    float fdnTankOutsNew[CHANNELS] = {};
     
     float directRaysOutput[2] = { 0.0f, 0.0f };
     
@@ -89,8 +89,8 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     processDirectRays(pInput, directRaysOutput);
     processTankOut(fdnTankOutsNew);
     
-    float fdnTankOutLeft[CHANNELS] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,};
-    float fdnTankOutRight[CHANNELS] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,};
+    float fdnTankOutLeft[CHANNELS] = {};
+    float fdnTankOutRight[CHANNELS] = {};
     filterChannels(fdnTankOutsNew, directRaysOutput, fdnTankOutLeft, fdnTankOutRight);
     
     float reverbOut[2] = {0.0f, 0.0f};
