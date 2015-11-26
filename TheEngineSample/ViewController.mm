@@ -111,7 +111,7 @@ static int kInputChannelsChangedContext;
     //Try: crowd, acapella, allofthestars, snap, button
     
     // Create the third loop player
-    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"crowd" withExtension:@"mp3"] error:NULL];
+    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"hello" withExtension:@"wav"] error:NULL];
     _loop3.volume = 1.0;
     _loop3.channelIsMuted = YES;
     _loop3.loop = YES;
