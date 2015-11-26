@@ -107,30 +107,16 @@ static int kInputChannelsChangedContext;
     self.audioController = audioController;
     
     
-    // Create the first loop player
-    self.loop1 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"headlights" withExtension:@"mp3"] error:NULL];
-    _loop1.volume = 1.0;
-    _loop1.channelIsMuted = YES;
-    _loop1.loop = YES;
-    
-    
-    // Create the second loop player
-    self.loop2 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"allofthestars" withExtension:@"mp3"] error:NULL];
-    _loop2.volume = 1.0;
-    _loop2.channelIsMuted = YES;
-    _loop2.loop = YES;
+
+    //Try: crowd, acapella, allofthestars, snap, button
     
     // Create the third loop player
-    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"piano" withExtension:@"mp3"] error:NULL];
+    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"crowd" withExtension:@"mp3"] error:NULL];
     _loop3.volume = 1.0;
     _loop3.channelIsMuted = YES;
     _loop3.loop = YES;
     
-    //Create the fourth loop player
-    self.loop4 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"guitar" withExtension:@"mp3"] error:NULL];
-    _loop4.volume = 1.0;
-    _loop4.channelIsMuted = YES;
-    _loop4.loop = YES;
+
     
     
     // initialise the reverb
@@ -167,7 +153,7 @@ static int kInputChannelsChangedContext;
     // Create a group for loop1, loop2 and oscillator
     
     _group = [_audioController createChannelGroup];
-    [_audioController addChannels:@[_loop1, _loop2, _loop3, _loop4, _oscillator] toChannelGroup:_group];
+    [_audioController addChannels:@[ _loop3, _oscillator] toChannelGroup:_group];
      
     // Finally, add the audio unit player
    // [_audioController addChannels:@[_audioUnitPlayer]];

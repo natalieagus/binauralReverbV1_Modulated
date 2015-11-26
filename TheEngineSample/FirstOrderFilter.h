@@ -22,7 +22,7 @@ public:
     void setLowPass(float fc);
     void setLowShelf(float fc, float gain);
     float process(float sample);
-    void setAngle(float theta, float fc);
+    void setAngle(float theta, float fc, bool right);
 };
 
 #endif /* defined(__ViolinModel__FirstOrderFilter__) */

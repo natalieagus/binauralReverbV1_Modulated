@@ -857,12 +857,12 @@ inline void FDN::sortDelayTimes(){
 void FDN::setFilters(){
     //Right is negative, p.151 DAFX
     for (size_t i = 0; i < CHANNELS; i++){
-        leftEarFilter[i].setAngle(channelToAngle(i), SAMPLINGRATEF);
-        rightEarFilter[i].setAngle(-channelToAngle(i), SAMPLINGRATEF);
+        leftEarFilter[i].setAngle(-channelToAngle(i), SAMPLINGRATEF, false);
+        rightEarFilter[i].setAngle(channelToAngle(i), SAMPLINGRATEF, true);
     }
     
-    directRayFilter[0].setAngle(directRayAngles[0], SAMPLINGRATEF);
-    directRayFilter[1].setAngle(-directRayAngles[1], SAMPLINGRATEF);
+    directRayFilter[0].setAngle(-directRayAngles[0], SAMPLINGRATEF,false);
+    directRayFilter[1].setAngle(directRayAngles[1], SAMPLINGRATEF, true);
     
 }
 

@@ -12,6 +12,7 @@
 #include "Math.h"
 
 
+
 FirstOrderFilter::FirstOrderFilter(){
     a1 = b0 = b1 = za = zb = 0.0f;
 }
@@ -25,7 +26,8 @@ float FirstOrderFilter::process(float sample){
 
 // angle is 0 at 12 o'clock and positive numbers count clockwise
 //a0 is always 1
-void FirstOrderFilter::setAngle(float theta, float fc){
+//right then -100
+void FirstOrderFilter::setAngle(float theta, float fc, bool right){
 //    // set a1, b0, b1
 //   // float initTheta = theta;
 //    theta = theta + 90.0f;
@@ -40,7 +42,13 @@ void FirstOrderFilter::setAngle(float theta, float fc){
 //    b1 = (-alfa+w0/fc)/(1.0+w0/fc);
 //    a1 = -(1.0-w0/fc)/(1.0+w0/fc);
 //    //printf("Theta: %f, b0 %f b1 %f a0 1 a1 %f\n", initTheta, b0,b1,a1);
-//    
+
+    //printf("Theta is initially: %f ", theta);
+    
+    if ((theta >= 30.f and theta <= 100.0f) or (theta <= -30.f and theta >= -100.f))
+    theta = theta - 100.f;
+   // printf("Theta is finally : %f \n", theta);
+
     theta =  theta / 180.0f * M_PI;
     float alpha_min = 0.1f;
     float c = 334.f; //% speed of sound
