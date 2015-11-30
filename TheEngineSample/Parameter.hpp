@@ -68,7 +68,6 @@ typedef struct Parameter {
     float roomSizeRatio, RT60, widthRatio,roomSize;
     float roomWidth, roomHeight;
     float roomCeiling;
-    
     float directGain, reverbGain;
     
 } Parameter;

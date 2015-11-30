@@ -42,12 +42,9 @@ void FirstOrderFilter::setAngle(float theta, float fc, bool right){
 //    b1 = (-alfa+w0/fc)/(1.0+w0/fc);
 //    a1 = -(1.0-w0/fc)/(1.0+w0/fc);
 //    //printf("Theta: %f, b0 %f b1 %f a0 1 a1 %f\n", initTheta, b0,b1,a1);
-
-    //printf("Theta is initially: %f ", theta);
     
-    if ((theta >= 30.f and theta <= 100.0f) or (theta <= -30.f and theta >= -100.f))
+    if ((theta >= 30.f and theta <= 150.0f) or (theta <= -30.f and theta >= -150.f))
     theta = theta - 100.f;
-   // printf("Theta is finally : %f \n", theta);
 
     theta =  theta / 180.0f * M_PI;
     float alpha_min = 0.1f;

@@ -36,6 +36,10 @@ FDN: a feedback delay network reverberator
 class FDN
 {
 public:
+    
+    float directPortionOn = 1.0f;
+    float reverbPortionOn = 1.0f;
+    
     // constructor
 	FDN(void);
     FDN(bool powerSaveMode); // call this with powerSaveMode set to true for a more efficient reverb with lower quality sound.

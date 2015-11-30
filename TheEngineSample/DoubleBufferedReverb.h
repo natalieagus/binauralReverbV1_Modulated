@@ -16,6 +16,7 @@
 class DoubleBufferedReverb
 {
 public:
+    
     DoubleBufferedReverb(void);
     
     Parameter parameters = Parameter();
@@ -38,6 +39,10 @@ public:
     void updateReverbSettings();
     
     void processIFretlessBuffer(float* IOBuffer, size_t frames, float * outputL, float* outputR);
+    
+    
+    void setReverbONOFF(bool on);
+    void setDirectONOFF(bool onO);
 private:
     void flip();
 
@@ -48,5 +53,6 @@ private:
     float r1_gain[DB_REVERB_BUFFER_SIZE];
     float r2_gain[DB_REVERB_BUFFER_SIZE];
     float r1_gainTarget;
+
 };
 

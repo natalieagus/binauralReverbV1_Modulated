@@ -110,11 +110,27 @@ static int kInputChannelsChangedContext;
 
     //Try: crowd, acapella, allofthestars, snap, button
     
+    self.loop1 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"snap" withExtension:@"wav"] error:NULL];
+    _loop1.volume = 1.0;
+    _loop1.channelIsMuted = YES;
+    _loop1.loop = YES;
+    
+    self.loop2 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"design2" withExtension:@"wav"] error:NULL];
+    _loop2.volume = 1.0;
+    _loop2.channelIsMuted = YES;
+    _loop2.loop = YES;
+    
     // Create the third loop player
     self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"hello" withExtension:@"wav"] error:NULL];
     _loop3.volume = 1.0;
     _loop3.channelIsMuted = YES;
     _loop3.loop = YES;
+    
+    
+    self.loop4 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"someonelikeyou" withExtension:@"wav"] error:NULL];
+    _loop4.volume = 1.0;
+    _loop4.channelIsMuted = YES;
+    _loop4.loop = YES;
     
 
     
@@ -153,14 +169,14 @@ static int kInputChannelsChangedContext;
     // Create a group for loop1, loop2 and oscillator
     
     _group = [_audioController createChannelGroup];
-    [_audioController addChannels:@[ _loop3, _oscillator] toChannelGroup:_group];
+    [_audioController addChannels:@[ _loop1,_loop2,_loop3, _loop4, _oscillator] toChannelGroup:_group];
      
     // Finally, add the audio unit player
    // [_audioController addChannels:@[_audioUnitPlayer]];
     
     
     [_audioController addObserver:self forKeyPath:@"numberOfInputChannels" options:0 context:(void*)&kInputChannelsChangedContext];
-    
+    _audioController.inputGain = 1.0f;
     return self;
 }
 
@@ -305,7 +321,7 @@ static int kInputChannelsChangedContext;
             return 3;
             
         case 1:
-            return 1;
+            return 4;
             
         case 2:
             return 6;
@@ -439,11 +455,37 @@ static int kInputChannelsChangedContext;
             cell.accessoryView = view;
             switch ( indexPath.row ) {
                 case 0: {
-                    cell.textLabel.text= @"Music";
+                    cell.textLabel.text= @"Acapella - Male";
                     onSwitch.on = !_loop3.channelIsMuted;
                     slider.value = _loop3.volume;
                     [onSwitch addTarget:self action:@selector(loop3SwitchChanged:) forControlEvents:UIControlEventValueChanged];
                     [slider addTarget:self action:@selector(loop3VolumeChanged:) forControlEvents:UIControlEventValueChanged];
+                    break;
+                }
+                case 1: {
+                    cell.textLabel.text= @"Poem - Female";
+                    onSwitch.on = !_loop2.channelIsMuted;
+                    slider.value = _loop2.volume;
+                    [onSwitch addTarget:self action:@selector(loop2SwitchChanged:) forControlEvents:UIControlEventValueChanged];
+                    [slider addTarget:self action:@selector(loop2VolumeChanged:) forControlEvents:UIControlEventValueChanged];
+                    break;
+                }
+                    
+                case 2: {
+                    cell.textLabel.text= @"Snapping Fingers";
+                    onSwitch.on = !_loop1.channelIsMuted;
+                    slider.value = _loop1.volume;
+                    [onSwitch addTarget:self action:@selector(loop1SwitchChanged:) forControlEvents:UIControlEventValueChanged];
+                    [slider addTarget:self action:@selector(loop1VolumeChanged:) forControlEvents:UIControlEventValueChanged];
+                    break;
+                }
+                    
+                case 3: {
+                    cell.textLabel.text= @"Acapella Female";
+                    onSwitch.on = !_loop4.channelIsMuted;
+                    slider.value = _loop4.volume;
+                    [onSwitch addTarget:self action:@selector(loop4SwitchChanged:) forControlEvents:UIControlEventValueChanged];
+                    [slider addTarget:self action:@selector(loop4VolumeChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
             }
@@ -542,42 +584,46 @@ static int kInputChannelsChangedContext;
                     break;
                 }
                 case 2: {
-                    cell.textLabel.text = @"Input Gain";
-                    UISlider *inputGainSlider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 100, 40)];
-                    inputGainSlider.minimumValue = 0.0;
-                    inputGainSlider.maximumValue = 1.0;
-                    inputGainSlider.value = _audioController.inputGain;
-                    [inputGainSlider addTarget:self action:@selector(inputGainSliderChanged:) forControlEvents:UIControlEventValueChanged];
-                    cell.accessoryView = inputGainSlider;
+                    cell.textLabel.text = @"Direct Portion On";
+                    ((UISwitch*)cell.accessoryView).on = true;
+                    [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(directPortionChanged:) forControlEvents:UIControlEventValueChanged];
+//                    UISlider *inputGainSlider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 100, 40)];
+//                    inputGainSlider.minimumValue = 0.0;
+//                    inputGainSlider.maximumValue = 1.0;
+//                    inputGainSlider.value = _audioController.inputGain;
+//                    [inputGainSlider addTarget:self action:@selector(inputGainSliderChanged:) forControlEvents:UIControlEventValueChanged];
+          //          cell.accessoryView = inputGainSlider;
                     break;
                 }
                 case 3: {
-                    cell.textLabel.text = @"Channels";
+                    cell.textLabel.text = @"Reverb Portion On";
                     
-                    int channelCount = _audioController.numberOfInputChannels;
-                    CGSize buttonSize = CGSizeMake(30, 30);
-
-                    UIScrollView *channelStrip = [[UIScrollView alloc] initWithFrame:CGRectMake(0,
-                                                                                                 0,
-                                                                                                 MIN(channelCount * (buttonSize.width+5) + 5,
-                                                                                                     isiPad ? 400 : 200),
-                                                                                                 cell.bounds.size.height)];
-                    channelStrip.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-                    channelStrip.backgroundColor = [UIColor clearColor];
-                    
-                    for ( int i=0; i<channelCount; i++ ) {
-                        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-                        button.frame = CGRectMake(i*(buttonSize.width+5), round((channelStrip.bounds.size.height-buttonSize.height)/2), buttonSize.width, buttonSize.height);
-                        [button setTitle:[NSString stringWithFormat:@"%d", i+1] forState:UIControlStateNormal];
-                        button.highlighted = [_audioController.inputChannelSelection containsObject:@(i)];
-                        button.tag = i;
-                        [button addTarget:self action:@selector(channelButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-                        [channelStrip addSubview:button];
-                    }
-                    
-                    channelStrip.contentSize = CGSizeMake(channelCount * (buttonSize.width+5) + 5, channelStrip.bounds.size.height);
-                    
-                    cell.accessoryView = channelStrip;
+                    ((UISwitch*)cell.accessoryView).on = true;
+                    [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(reverbPortionChanged:) forControlEvents:UIControlEventValueChanged];
+//                    int channelCount = _audioController.numberOfInputChannels;
+//                    CGSize buttonSize = CGSizeMake(30, 30);
+//
+//                    UIScrollView *channelStrip = [[UIScrollView alloc] initWithFrame:CGRectMake(0,
+//                                                                                                 0,
+//                                                                                                 MIN(channelCount * (buttonSize.width+5) + 5,
+//                                                                                                     isiPad ? 400 : 200),
+//                                                                                                 cell.bounds.size.height)];
+//                    channelStrip.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+//                    channelStrip.backgroundColor = [UIColor clearColor];
+//                    
+//                    for ( int i=0; i<channelCount; i++ ) {
+//                        UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+//                        button.frame = CGRectMake(i*(buttonSize.width+5), round((channelStrip.bounds.size.height-buttonSize.height)/2), buttonSize.width, buttonSize.height);
+//                        [button setTitle:[NSString stringWithFormat:@"%d", i+1] forState:UIControlStateNormal];
+//                        button.highlighted = [_audioController.inputChannelSelection containsObject:@(i)];
+//                        button.tag = i;
+//                        [button addTarget:self action:@selector(channelButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+//                        [channelStrip addSubview:button];
+//                    }
+//                    
+//                    channelStrip.contentSize = CGSizeMake(channelCount * (buttonSize.width+5) + 5, channelStrip.bounds.size.height);
+//                    
+//                    cell.accessoryView = channelStrip;
                
                     break;
                 }
@@ -849,6 +895,15 @@ static int kInputChannelsChangedContext;
     }
 }
 
+- (void)directPortionChanged:(UISwitch*)sender {
+    Reverb.setDirectONOFF(sender.on);
+    
+}
+
+- (void)reverbPortionChanged:(UISwitch*)sender {
+    Reverb.setReverbONOFF(sender.on) ;
+    
+}
 - (void)measurementModeSwitchChanged:(UISwitch*)sender {
     _audioController.useMeasurementMode = sender.on;
     

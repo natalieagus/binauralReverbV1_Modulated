@@ -100,8 +100,8 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     vDSP_sve(fdnTankOutLeft, 1, &reverbOut[0], CHANNELS);
     vDSP_sve(fdnTankOutRight, 1, &reverbOut[1], CHANNELS);
     
-    *pOutputL = (directRaysOutput[0]*directMix - reverbOut[0]);
-    *pOutputR = (directRaysOutput[1]*directMix - reverbOut[1]);
+    *pOutputL = (directRaysOutput[0]*directMix*directPortionOn - reverbOut[0]*reverbPortionOn);
+    *pOutputR = (directRaysOutput[1]*directMix*directPortionOn - reverbOut[1]*reverbPortionOn);
     
     //Continue processing reverb
     // outputsAF = b0*t + b1*z1;

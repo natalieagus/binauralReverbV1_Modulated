@@ -117,4 +117,27 @@ void DoubleBufferedReverb::flip(){
         r1_gainTarget = 0.0f;
         backReverb = &reverb1;
     }
+    
+}
+
+void DoubleBufferedReverb::setReverbONOFF(bool on){
+    if (on){
+        reverb2.reverbPortionOn = 1.0f;
+        reverb1.reverbPortionOn = 1.0f;
+    }
+    else{
+        reverb2.reverbPortionOn = 0.0f;
+        reverb1.reverbPortionOn = 0.0f;
+    }
+}
+
+void DoubleBufferedReverb::setDirectONOFF(bool on){
+    if (on){
+        reverb2.directPortionOn = 1.0f;
+        reverb1.directPortionOn = 1.0f;
+    }
+    else{
+        reverb2.directPortionOn = 0.0f;
+        reverb1.directPortionOn = 0.0f;
+    }
 }
