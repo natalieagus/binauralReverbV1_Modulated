@@ -53,6 +53,8 @@ public:
 
 protected:
     
+    void configureRandomModel(float roomSize);
+    
     Delays reverbDelayValues[NUMTAPSSTD];
     void shuffleDelays();
     
@@ -160,7 +162,8 @@ protected:
 	float inputs[NUMDELAYSSTD];
 	float outputsPF[NUMTAPSSTD];
     float outputsAF[NUMTAPSSTD];
- //   float outTapSigns[NUMTAPSSTD]; //change to outTapGains
+    
+    float outTapSigns[NUMTAPSSTD];
 	float feedbackTapGains[NUMTAPSSTD];
     //float outTapTemp[NUMDELAYSSTANDARD][OUTPUTTAPSPERDELAY];
     //int fbTapIdxBase[NUMDELAYSSTANDARD];

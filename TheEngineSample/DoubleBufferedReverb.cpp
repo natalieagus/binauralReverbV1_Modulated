@@ -106,6 +106,13 @@ void DoubleBufferedReverb::setRT60(float RT60){
     flip();
 }
 
+void DoubleBufferedReverb::setRoomRayModel(bool roomRayModel){
+    this->parameters.roomRayModelOn = roomRayModel;
+    updateReverbSettings();
+    usleep(200000);
+    flip();
+}
+
 void DoubleBufferedReverb::flip(){
     // if reverb 1 is on the back buffer
     if (backReverb == &reverb1) {

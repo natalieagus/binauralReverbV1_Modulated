@@ -37,7 +37,7 @@ public:
     void setWidthRatio(float size);
     void setRT60(float RT60);
     void updateReverbSettings();
-    
+    void setRoomRayModel(bool roomRay);
     void processIFretlessBuffer(float* IOBuffer, size_t frames, float * outputL, float* outputR);
     
     

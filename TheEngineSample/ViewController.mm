@@ -327,7 +327,7 @@ static int kInputChannelsChangedContext;
             return 6;
             
         case 3:
-            return 3 + (_audioController.numberOfInputChannels > 1 ? 1 : 0);
+            return 4 + (_audioController.numberOfInputChannels > 1 ? 1 : 0);
         case 4:
             return 1;
             
@@ -626,6 +626,13 @@ static int kInputChannelsChangedContext;
 //                    cell.accessoryView = channelStrip;
                
                     break;
+                case 4:{
+                    cell.textLabel.text = @"RoomRayModel Portion On";
+                    
+                    ((UISwitch*)cell.accessoryView).on = true;
+                    [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(roomRayModelChanged:) forControlEvents:UIControlEventValueChanged];
+                    break;
+                }
                 }
             }
             break;
@@ -898,6 +905,10 @@ static int kInputChannelsChangedContext;
 - (void)directPortionChanged:(UISwitch*)sender {
     Reverb.setDirectONOFF(sender.on);
     
+}
+
+-(void) roomRayModelChanged:(UISwitch*)sender{
+    Reverb.setRoomRayModel(sender.on);
 }
 
 - (void)reverbPortionChanged:(UISwitch*)sender {

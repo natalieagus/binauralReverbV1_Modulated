@@ -51,6 +51,8 @@ typedef struct Parameter {
         this->directGain = INITIALDIRECTGAIN;
         this->reverbGain = INITIALREVERBGAIN;
         
+        this->roomRayModelOn = true;
+        
     }
     
     void setListenerLocation(Point2d Ratio);
@@ -69,6 +71,8 @@ typedef struct Parameter {
     float roomWidth, roomHeight;
     float roomCeiling;
     float directGain, reverbGain;
+    
+    bool roomRayModelOn;
     
 } Parameter;
 
