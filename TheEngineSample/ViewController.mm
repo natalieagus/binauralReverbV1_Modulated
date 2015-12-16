@@ -39,6 +39,9 @@ static int kInputChannelsChangedContext;
     int counter;
 
     bool ssLock;
+    float rSize;
+    float rt60Val;
+    float wRatio;
 
 }
 @property (nonatomic, strong) AEAudioController *audioController;
@@ -84,6 +87,9 @@ static int kInputChannelsChangedContext;
 //    reverb2Pointer = &reverb2;
     
     
+    rSize = 0.15f;
+    wRatio = 0.5f;
+    rt60Val = 0.7f;
     
     autoSoundMove = false;
     angle = 0.0f;
@@ -118,19 +124,19 @@ static int kInputChannelsChangedContext;
     _loop1.channelIsMuted = YES;
     _loop1.loop = YES;
     
-    self.loop2 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"design2" withExtension:@"wav"] error:NULL];
+    self.loop2 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"acapellafemale2" withExtension:@"wav"] error:NULL];
     _loop2.volume = 1.0;
     _loop2.channelIsMuted = YES;
     _loop2.loop = YES;
     
     // Create the third loop player
-    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"restaurant" withExtension:@"wav"] error:NULL];
+    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"guitar" withExtension:@"wav"] error:NULL];
     _loop3.volume = 1.0;
     _loop3.channelIsMuted = YES;
     _loop3.loop = YES;
     
     
-    self.loop4 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"someonelikeyou" withExtension:@"wav"] error:NULL];
+    self.loop4 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"acapellafemale" withExtension:@"wav"] error:NULL];
     _loop4.volume = 1.0;
     _loop4.channelIsMuted = YES;
     _loop4.loop = YES;
@@ -320,17 +326,14 @@ static int kInputChannelsChangedContext;
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch ( section ) {
-        case 0:
-            return 3;
-            
         case 1:
             return 4;
             
         case 2:
-            return 6;
+            return 5;
             
         case 3:
-            return 5 + (_audioController.numberOfInputChannels > 1 ? 1 : 0);
+            return 4 + (_audioController.numberOfInputChannels > 1 ? 1 : 0);
         case 4:
             return 1;
             
@@ -458,7 +461,7 @@ static int kInputChannelsChangedContext;
             cell.accessoryView = view;
             switch ( indexPath.row ) {
                 case 0: {
-                    cell.textLabel.text= @"Restaurant";
+                    cell.textLabel.text= @"Guitar";
                     onSwitch.on = !_loop3.channelIsMuted;
                     slider.value = _loop3.volume;
                     [onSwitch addTarget:self action:@selector(loop3SwitchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -466,7 +469,7 @@ static int kInputChannelsChangedContext;
                     break;
                 }
                 case 1: {
-                    cell.textLabel.text= @"Poem - Female";
+                    cell.textLabel.text= @"Acapella - Female 2";
                     onSwitch.on = !_loop2.channelIsMuted;
                     slider.value = _loop2.volume;
                     [onSwitch addTarget:self action:@selector(loop2SwitchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -506,60 +509,60 @@ static int kInputChannelsChangedContext;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(limiterSwitchChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
+//                case 9: {
+//                    cell.textLabel.text = @"Expander";
+////                    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 250, 40)];
+////                    UIButton *calibrateButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+////                    calibrateButton.translatesAutoresizingMaskIntoConstraints = NO;
+////                    [calibrateButton setTitle:@"Calibrate" forState:UIControlStateNormal];
+////                    [calibrateButton addTarget:self action:@selector(calibrateExpander:) forControlEvents:UIControlEventTouchUpInside];
+////                    UISwitch * onSwitch = [[UISwitch alloc] initWithFrame:CGRectZero];
+////                    onSwitch.translatesAutoresizingMaskIntoConstraints = NO;
+////                    onSwitch.on = _expander != nil;
+////                    [onSwitch addTarget:self action:@selector(expanderSwitchChanged:) forControlEvents:UIControlEventValueChanged];
+////                    [view addSubview:calibrateButton];
+////                    [view addSubview:onSwitch];
+////                    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[calibrateButton][onSwitch]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(calibrateButton, onSwitch)]];
+////                    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[calibrateButton]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(calibrateButton)]];
+////                    [view addConstraint:[NSLayoutConstraint constraintWithItem:onSwitch attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:view attribute:NSLayoutAttributeCenterY multiplier:1 constant:0]];
+////                    cell.accessoryView = view;
+//                    break;
+//                }
                 case 1: {
-                    cell.textLabel.text = @"Expander";
-                    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 250, 40)];
-                    UIButton *calibrateButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-                    calibrateButton.translatesAutoresizingMaskIntoConstraints = NO;
-                    [calibrateButton setTitle:@"Calibrate" forState:UIControlStateNormal];
-                    [calibrateButton addTarget:self action:@selector(calibrateExpander:) forControlEvents:UIControlEventTouchUpInside];
-                    UISwitch * onSwitch = [[UISwitch alloc] initWithFrame:CGRectZero];
-                    onSwitch.translatesAutoresizingMaskIntoConstraints = NO;
-                    onSwitch.on = _expander != nil;
-                    [onSwitch addTarget:self action:@selector(expanderSwitchChanged:) forControlEvents:UIControlEventValueChanged];
-                    [view addSubview:calibrateButton];
-                    [view addSubview:onSwitch];
-                    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[calibrateButton][onSwitch]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(calibrateButton, onSwitch)]];
-                    [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[calibrateButton]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(calibrateButton)]];
-                    [view addConstraint:[NSLayoutConstraint constraintWithItem:onSwitch attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:view attribute:NSLayoutAttributeCenterY multiplier:1 constant:0]];
-                    cell.accessoryView = view;
-                    break;
-                }
-                case 2: {
                     cell.textLabel.text = @"Reverb";
                     ((UISwitch*)cell.accessoryView).on = _reverbBlock != nil;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(reverbSwitchChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
-                case 3: {
+                case 2: {
                     cell.textLabel.text = @"Room Size";
                     UISlider *roomSizeSlider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
                     roomSizeSlider.minimumValue = 0.1;
                     roomSizeSlider.maximumValue = 1.0;
-                    roomSizeSlider.value = 0.15;
+                    roomSizeSlider.value = rSize;
                     [roomSizeSlider setContinuous:NO];
                     [roomSizeSlider addTarget:self action:@selector(roomSizeChanged:) forControlEvents:UIControlEventValueChanged];
                     cell.accessoryView = roomSizeSlider;
                     break;
                 }
-                case 4:{
+                case 3:{
                     cell.textLabel.text= @"RT60 Value";
                     UISlider *rt60Slider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
                     rt60Slider.minimumValue = 0.2f;
                     rt60Slider.maximumValue = 3.0f;
-                    rt60Slider.value = 0.7f;
+                    rt60Slider.value = rt60Val;
                     [rt60Slider setContinuous:NO];
                     [rt60Slider addTarget:self action:@selector(rt60SizeChanged:) forControlEvents:UIControlEventValueChanged];
                     cell.accessoryView = rt60Slider;
                     break;
 
                 }
-                case 5:{
+                case 4:{
                     cell.textLabel.text= @"widthRatio %";
                     UISlider *directMix = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
                     directMix.minimumValue = 0.1f;
                     directMix.maximumValue = 0.9f;
-                    directMix.value = 0.5f;
+                    directMix.value = wRatio;
                     [directMix setContinuous:NO];
                     [directMix addTarget:self action:@selector(widthRatioSizeChanged:) forControlEvents:UIControlEventValueChanged];
                     cell.accessoryView = directMix;
@@ -579,14 +582,14 @@ static int kInputChannelsChangedContext;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(playthroughSwitchChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
+//                case 6: {
+//                    cell.textLabel.text = @"Measurement Mode";
+//                    ((UISwitch*)cell.accessoryView).on = _audioController.useMeasurementMode;
+//                    [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(measurementModeSwitchChanged:) forControlEvents:UIControlEventValueChanged];
+//
+//                    break;
+//                }
                 case 1: {
-                    cell.textLabel.text = @"Measurement Mode";
-                    ((UISwitch*)cell.accessoryView).on = _audioController.useMeasurementMode;
-                    [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(measurementModeSwitchChanged:) forControlEvents:UIControlEventValueChanged];
-
-                    break;
-                }
-                case 2: {
                     cell.textLabel.text = @"Direct Portion On";
                     ((UISwitch*)cell.accessoryView).on = true;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(directPortionChanged:) forControlEvents:UIControlEventValueChanged];
@@ -598,7 +601,7 @@ static int kInputChannelsChangedContext;
           //          cell.accessoryView = inputGainSlider;
                     break;
                 }
-                case 3: {
+                case 2: {
                     cell.textLabel.text = @"Reverb Portion On";
                     
                     ((UISwitch*)cell.accessoryView).on = true;
@@ -630,14 +633,14 @@ static int kInputChannelsChangedContext;
                
                     break;
                 }
-                case 4:{
+                case 3:{
                     cell.textLabel.text = @"RoomRayModel Portion On";
                     
                     ((UISwitch*)cell.accessoryView).on = true;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(roomRayModelChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
-                case 5:{
+                case 4:{
                     cell.textLabel.text = @"Lock Soundsource On";
                     
                     ((UISwitch*)cell.accessoryView).on = false;
@@ -701,7 +704,7 @@ static int kInputChannelsChangedContext;
     sender.center = point;
     
     if (ssLock){
-        CGPoint ssP = CGPointMake(point.x, point.y - self.tableView.bounds.size.width * 0.3f);
+        CGPoint ssP = CGPointMake(point.x, point.y - self.tableView.bounds.size.width * 0.4f);
         if (ssP.y < 0.0f){
             ssP.y = -ssP.y;
         }
@@ -984,12 +987,14 @@ static int kInputChannelsChangedContext;
 
 -(void)roomSizeChanged:(UISlider*)slider {
     Reverb.setRoomSize(slider.value);
+    rSize = slider.value;
 //    reverb.setRoomSize(slider.value);
 //     reverb2.setRoomSize(slider.value);
 }
 
 - (void) rt60SizeChanged: (UISlider*)slider{
     Reverb.setRT60(slider.value);
+    rt60Val = slider.value;
 //    reverb.setRT60(slider.value);
 //    reverb2.setRT60(slider.value);
 }
@@ -997,6 +1002,7 @@ static int kInputChannelsChangedContext;
 - (void) widthRatioSizeChanged: (UISlider*) slider{
 //    reverb.setDirectMix(slider.value);
     Reverb.setWidthRatio(slider.value);
+    wRatio = slider.value;
 //    reverb.setWidthRatio(slider.value);
 //    reverb2.setWidthRatio(slider.value);
     
@@ -1059,7 +1065,7 @@ static int kInputChannelsChangedContext;
             
             
             // run equalizer on left channel, out to buffer
-            equalizer.processBuffer((float*)audio->mBuffers[0].mData, (float*)audio->mBuffers[0].mData, frames);
+          //  equalizer.processBuffer((float*)audio->mBuffers[0].mData, (float*)audio->mBuffers[0].mData, frames);
 
             
             Reverb.processIFretlessBuffer((float*)audio->mBuffers[0].mData, frames, (float*)audio->mBuffers[0].mData  ,(float*) audio->mBuffers[1].mData);

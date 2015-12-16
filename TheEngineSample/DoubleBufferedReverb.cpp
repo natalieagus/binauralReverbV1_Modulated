@@ -85,6 +85,7 @@ void DoubleBufferedReverb::setSoundLocation(float* loc){
     flip();
 }
 
+
 void DoubleBufferedReverb::setSoundAndListenerLocation(float* locL, float* locS){
     Point2d RatioL = Point2d(locL[0],1.0f-locL[1]);
   //  printf("loc of listener is: %f %f \n", RatioL.x, RatioL.y);
