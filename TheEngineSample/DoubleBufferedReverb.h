@@ -33,6 +33,7 @@ public:
     
     void setListenerLocation(float* loc);
     void setSoundLocation(float* loc);
+    void setSoundAndListenerLocation(float* locL, float* locS);
     void setRoomSize(float size);
     void setWidthRatio(float size);
     void setRT60(float RT60);

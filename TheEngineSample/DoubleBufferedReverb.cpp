@@ -85,6 +85,18 @@ void DoubleBufferedReverb::setSoundLocation(float* loc){
     flip();
 }
 
+void DoubleBufferedReverb::setSoundAndListenerLocation(float* locL, float* locS){
+    Point2d RatioL = Point2d(locL[0],1.0f-locL[1]);
+    printf("loc of listener is: %f %f \n", RatioL.x, RatioL.y);
+    this->parameters.setListenerLocation(RatioL);
+    Point2d RatioS = Point2d(locS[0],1.0f-locS[1]);
+    printf("loc of sound is: %f %f \n", RatioS.x, RatioS.y);
+    this->parameters.setSoundLocation(RatioS);
+    updateReverbSettings();
+    usleep(200000);
+    flip();
+}
+
 void DoubleBufferedReverb::setRoomSize(float size){
     parameters.setRoomSize(size);
     updateReverbSettings();

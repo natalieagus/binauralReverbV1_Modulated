@@ -38,6 +38,7 @@ static int kInputChannelsChangedContext;
     float angle;
     int counter;
 
+    bool ssLock;
 
 }
 @property (nonatomic, strong) AEAudioController *audioController;
@@ -74,6 +75,8 @@ static int kInputChannelsChangedContext;
 
 - (id)initWithAudioController:(AEAudioController*)audioController {
     if ( !(self = [super initWithStyle:UITableViewStyleGrouped]) ) return nil;
+    
+    ssLock = false;
     
     counter = 0;
     self.number = 1.0f;
@@ -121,7 +124,7 @@ static int kInputChannelsChangedContext;
     _loop2.loop = YES;
     
     // Create the third loop player
-    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"hello" withExtension:@"wav"] error:NULL];
+    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"restaurant" withExtension:@"wav"] error:NULL];
     _loop3.volume = 1.0;
     _loop3.channelIsMuted = YES;
     _loop3.loop = YES;
@@ -327,7 +330,7 @@ static int kInputChannelsChangedContext;
             return 6;
             
         case 3:
-            return 4 + (_audioController.numberOfInputChannels > 1 ? 1 : 0);
+            return 5 + (_audioController.numberOfInputChannels > 1 ? 1 : 0);
         case 4:
             return 1;
             
@@ -455,7 +458,7 @@ static int kInputChannelsChangedContext;
             cell.accessoryView = view;
             switch ( indexPath.row ) {
                 case 0: {
-                    cell.textLabel.text= @"Acapella - Male";
+                    cell.textLabel.text= @"Restaurant";
                     onSwitch.on = !_loop3.channelIsMuted;
                     slider.value = _loop3.volume;
                     [onSwitch addTarget:self action:@selector(loop3SwitchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -626,6 +629,7 @@ static int kInputChannelsChangedContext;
 //                    cell.accessoryView = channelStrip;
                
                     break;
+                }
                 case 4:{
                     cell.textLabel.text = @"RoomRayModel Portion On";
                     
@@ -633,7 +637,14 @@ static int kInputChannelsChangedContext;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(roomRayModelChanged:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
+                case 5:{
+                    cell.textLabel.text = @"Lock Soundsource On";
+                    
+                    ((UISwitch*)cell.accessoryView).on = false;
+                    [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(soundSourceLock:) forControlEvents:UIControlEventValueChanged];
+                    break;
                 }
+                
             }
             break;
         }
@@ -688,6 +699,14 @@ static int kInputChannelsChangedContext;
         point.y = 0;
     }
     sender.center = point;
+    
+    if (ssLock){
+        CGPoint ssP = CGPointMake(point.x, point.y - self.tableView.bounds.size.width * 0.3f);
+        if (ssP.y < 0.0f){
+            ssP.y = -ssP.y;
+        }
+        SoundSource.center = ssP;
+    }
 }
 
 - (void) listenerTouchedEnds:(UIButton*) sender withEvent:(UIEvent*) event{
@@ -700,8 +719,17 @@ static int kInputChannelsChangedContext;
     float loc[2] = {x,y};
     
 //    [self flip];
-    
+    if (!ssLock){
     Reverb.setListenerLocation(loc);
+    }
+    
+    else{
+        CGPoint ssp = SoundSource.center;
+        float x1 = ssp.x / self.tableView.bounds.size.width;
+        float y1 = ssp.y / self.tableView.bounds.size.width;
+        float loc1[2] = {x1,y1};
+        Reverb.setSoundAndListenerLocation(loc, loc1);
+    }
 
  
 //    self.changeListenerTimer = [NSTimer scheduledTimerWithTimeInterval:0.2 target:self selector:@selector(swapListener:) userInfo:nil repeats:NO];
@@ -739,6 +767,8 @@ static int kInputChannelsChangedContext;
 - (void) soundSourceTouchedEnds:(UIButton*) sender withEvent:(UIEvent*) event{
     //Update the final position here
   //  printf("touch ends");
+    
+    if (!ssLock){
     CGPoint p = sender.center;
     float x = p.x / self.tableView.bounds.size.width;
     float y = p.y / self.tableView.bounds.size.width;
@@ -746,6 +776,7 @@ static int kInputChannelsChangedContext;
     float loc[2] = {x,y};
     
     Reverb.setSoundLocation(loc);
+    }
 //    [self flip];
 //    reverb2Pointer->setSoundSourceLoc(loc);
 //    
@@ -756,6 +787,7 @@ static int kInputChannelsChangedContext;
 - (void) soundSourceTouched:(UIButton*) sender withEvent:(UIEvent* )event{
   //  printf("DRAGGED");
     
+    if (!ssLock){
     CGPoint point = [[[event allTouches]anyObject] locationInView:self.tableView];
   //  printf("Location x is: %f, location y is %f \n", point.x, point.y);
   //  printf("sender center was : %f, %f\n", sender.center.x, sender.center.y);
@@ -775,6 +807,7 @@ static int kInputChannelsChangedContext;
         point.y = self.tableView.bounds.size.width;
     }
     sender.center = point;
+    }
 }
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -910,6 +943,11 @@ static int kInputChannelsChangedContext;
 -(void) roomRayModelChanged:(UISwitch*)sender{
     Reverb.setRoomRayModel(sender.on);
 }
+
+-(void)soundSourceLock:(UISwitch*) sender{
+    ssLock = sender.on;
+}
+
 
 - (void)reverbPortionChanged:(UISwitch*)sender {
     Reverb.setReverbONOFF(sender.on) ;
