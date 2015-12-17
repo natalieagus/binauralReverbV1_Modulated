@@ -3,8 +3,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <assert.h>
-
 #include <random>
+
 
 //Initialize condition:
 //Room size 5x5 metres
@@ -104,7 +104,7 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     
     *pOutputL = (directRaysOutput[0]*directMix*directPortionOn - reverbOut[0]*reverbPortionOn);
     *pOutputR = (directRaysOutput[1]*directMix*directPortionOn - reverbOut[1]*reverbPortionOn);
-    
+      //  printf("%f,",(directRaysOutput[0]*directMix*directPortionOn - reverbOut[0]*reverbPortionOn));
     }
     else{
         
@@ -249,6 +249,7 @@ FDN::FDN(bool powerSaveMode)
 
 void FDN::initialise(bool powerSaveMode){
     
+
     if (powerSaveMode){
         numDelays = DELAYUNITSSMALL*DELAYSPERUNIT;
         delayUnits = DELAYUNITSSMALL;
@@ -504,21 +505,26 @@ void FDN::setParameterSafe(Parameter params){
     configureRoomRayModel();
     setDelayChannels();
     setDelayTimes();
+    setDirectDelayTimes();
+    setDirectRayAngles();
     
     shortenDelayTimes();
     shuffleDelays();
     
     setTempPoints();
     calculateAdditionalDelays();
-    setDirectDelayTimes();
-    setDirectRayAngles();
+
+
     
     if (!parametersFDN.roomRayModelOn){
         configureRandomModel(parametersFDN.roomSize);
     }
     for (int i = 0; i <numDelays; i++){
         delayTimes[i] = delayTimesNew[i];
+       // printf("%d,",delayTimes[i]);
     }
+    
+    //printf("\n\n====end=======\n\n");
     
     setSingleTapDelay();
     setFilters();
@@ -541,11 +547,14 @@ void FDN::setParameterSafe(Parameter params){
 
 void FDN::shortenDelayTimes(){
     float minimum = MAXFLOAT;
+    int minDir = 0;
     
     for (int i = 0; i < 2; i++){
         float d = directDelayTimes[i] * SAMPLINGRATEF;
+      // printf("%f ddt \n", directDelayTimes[i]);
         if (d < minimum){
             minimum = d;
+            minDir = i;
         }
     }
     
@@ -553,6 +562,15 @@ void FDN::shortenDelayTimes(){
     directDelayTimes[0] -= minimum/SAMPLINGRATEF;
     directDelayTimes[1] -= minimum/SAMPLINGRATEF;
     
+
+    if (minDir == 0){
+        minimum = directDelayTimes[1] * SAMPLINGRATEF;
+    }
+    else{
+        minimum = directDelayTimes[0] * SAMPLINGRATEF;
+    }
+    
+
     float minReverb = MAXFLOAT;
     
     for (int i = 0; i < NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT); i++){
@@ -561,6 +579,7 @@ void FDN::shortenDelayTimes(){
             minReverb = d;
         }
     }
+  //  printf("random min d %f max d %f \n", minimum, minReverb);
     
     std::random_device rd;     // only used once to initialise (seed) engine
     std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
@@ -575,18 +594,19 @@ void FDN::shortenDelayTimes(){
     //ADD EXTRA DELAYS
     for (int i = 0; i < (EXTRADELAYS * DELAYSPERUNIT); i++){
         delayTimesNew[i + NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT)] = uni(rd);
+      //  printf("extradelay : %f \n",          delayTimesNew[i + NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT)]);
         reverbDelayValues[i + NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT)] = Delays(delayTimesNew[i+NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT)], -1, -1, -1);
         
     }
     
-    //print out
-    //    for (int i = 0; i < 2; i++){
-    //        printf("Direct delay times : %f \n", directDelayTimes[i]);
-    //    }
-    //    for (int i = 0; i < numDelays; i++){
-    //        printf("Reverb delay times: %f \n", delayTimesNew[i]);
-    //    }
-    
+//    //print out
+//        for (int i = 0; i < 2; i++){
+//            printf("Direct delay times : %f \n", directDelayTimes[i]);
+//        }
+//        for (int i = 0; i < numDelays; i++){
+//            printf("Reverb delay times: %f \n", delayTimesNew[i]);
+//        }
+//    
 }
 
 inline int FDN::getRandom(){
@@ -787,7 +807,9 @@ inline void FDN::setDirectDelayTimes(){
     float directDelayLeft = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocLeftEar) / SOUNDSPEED;
     float directDelayRight = parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLocRightEar) / SOUNDSPEED;
     directDelayTimes[0] = directDelayLeft;
+   // printf("ddL %f \n", directDelayLeft);
     directDelayTimes[1] = directDelayRight;
+   // printf("ddR %f \n", directDelayRight);
 }
 
 void FDN::setDirectRayAngles(){
@@ -975,9 +997,37 @@ void FDN::configureRoomRayModel(){
     roomRayModel.setLocation(inputGains, outputGains, rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints);
     float rd = REFERENCEDISTANCE;
     directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
-    //    for(int i = 0; i < NUMTAPSSTD; i++){
-    //        printf("Room bounce points %f %f \n", roomBouncePoints[i].x, roomBouncePoints[i].y);
-    //    }
+    
+    for (int i = 0; i<NUMTAPSSTD; i++){
+        outputGains[i] =  1.0/sqrt((float)numTaps);
+    }
+    
+    
+    for(int i = 0; i<NUMTAPSSTD; i++){
+        printf("%f,",outputGains[i]);
+    }
+    
+    printf("\n\n ==== end ==== \n\n");
+    
+    
+    
+    
+//        for(int i = 0; i < NUMTAPSSTD; i++){
+//            printf("%f,", roomBouncePoints[i].x);
+//        }
+//    printf("%f,", parametersFDN.soundSourceLoc.x);
+//    printf("%f,",parametersFDN.listenerLoc.x);
+//    
+//    printf("\n\n\n");
+//    for(int i = 0; i < NUMTAPSSTD; i++){
+//        printf("%f,", roomBouncePoints[i].y);
+//    }
+//    
+//    printf("%f,", parametersFDN.soundSourceLoc.y);
+//    printf("%f,",parametersFDN.listenerLoc.y);
+//    
+//    printf("\n\n\n finish\n");
+  
     
 }
 

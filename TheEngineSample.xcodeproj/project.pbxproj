@@ -22,6 +22,8 @@
 		2C72A0441C076E8D0054BA3A /* snap.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A03B1C076E8D0054BA3A /* snap.wav */; settings = {ASSET_TAGS = (); }; };
 		2C72A0451C076E8D0054BA3A /* someonelikeyou.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A03C1C076E8D0054BA3A /* someonelikeyou.wav */; settings = {ASSET_TAGS = (); }; };
 		2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */; };
+		2CCA78F81C227A13006B8D46 /* fullSpectrumImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */; settings = {ASSET_TAGS = (); }; };
+		2CCA78F91C227A13006B8D46 /* lowpassFilteredImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */; settings = {ASSET_TAGS = (); }; };
 		2CD0C0A31BE7A9E1009D9971 /* SecondOrderFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */; };
 		2CE0CEF21BF572BD00E9699E /* Delays.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE0CEF01BF572BD00E9699E /* Delays.cpp */; settings = {ASSET_TAGS = (); }; };
 		2CE69B8B1BC5068100072C04 /* SingleTapDelay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE69B891BC5068100072C04 /* SingleTapDelay.cpp */; };
@@ -106,6 +108,8 @@
 		2C72A03C1C076E8D0054BA3A /* someonelikeyou.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = someonelikeyou.wav; sourceTree = "<group>"; };
 		2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parameter.cpp; sourceTree = "<group>"; };
 		2C7CD63B1BE0C920000F26E2 /* Parameter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Parameter.hpp; sourceTree = "<group>"; };
+		2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = fullSpectrumImpulse.wav; sourceTree = "<group>"; };
+		2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = lowpassFilteredImpulse.wav; sourceTree = "<group>"; };
 		2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SecondOrderFilter.cpp; sourceTree = "<group>"; };
 		2CD0C0A21BE7A9E1009D9971 /* SecondOrderFilter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SecondOrderFilter.hpp; sourceTree = "<group>"; };
 		2CE0CEF01BF572BD00E9699E /* Delays.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Delays.cpp; sourceTree = "<group>"; };
@@ -206,6 +210,8 @@
 				2C72A0341C076E8D0054BA3A /* acapella.wav */,
 				2C72A0351C076E8D0054BA3A /* allofthestars.wav */,
 				2C72A0361C076E8D0054BA3A /* button.wav */,
+				2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */,
+				2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */,
 				2C72A0371C076E8D0054BA3A /* design.wav */,
 				2C3C6C571C2161F3004A63A8 /* guitar.wav */,
 				2C72A0381C076E8D0054BA3A /* design2.wav */,
@@ -469,7 +475,9 @@
 				2C3C6C581C2161F3004A63A8 /* guitar.wav in Resources */,
 				2C72A0421C076E8D0054BA3A /* hello.wav in Resources */,
 				4C09450B170001660054608E /* Default.png in Resources */,
+				2CCA78F91C227A13006B8D46 /* lowpassFilteredImpulse.wav in Resources */,
 				2C72A0431C076E8D0054BA3A /* road.wav in Resources */,
+				2CCA78F81C227A13006B8D46 /* fullSpectrumImpulse.wav in Resources */,
 				2C72A03D1C076E8D0054BA3A /* acapella.wav in Resources */,
 				4C09450C170001660054608E /* Default@2x.png in Resources */,
 				4C09450D170001660054608E /* Default~ipad.png in Resources */,

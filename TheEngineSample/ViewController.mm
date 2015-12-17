@@ -17,6 +17,7 @@
 #import "FDN.h"
 #import "MultiLevelBiQuadFilter.h"
 #import "DoubleBufferedReverb.h"
+#include <math.h>
 
 static int kInputChannelsChangedContext;
 
@@ -119,7 +120,7 @@ static int kInputChannelsChangedContext;
 
     //Try: crowd, acapella, allofthestars, snap, button
     
-    self.loop1 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"snap" withExtension:@"wav"] error:NULL];
+    self.loop1 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"fullSpectrumImpulse" withExtension:@"wav"] error:NULL];
     _loop1.volume = 1.0;
     _loop1.channelIsMuted = YES;
     _loop1.loop = YES;
@@ -130,7 +131,7 @@ static int kInputChannelsChangedContext;
     _loop2.loop = YES;
     
     // Create the third loop player
-    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"guitar" withExtension:@"wav"] error:NULL];
+    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"lowpassFilteredImpulse" withExtension:@"wav"] error:NULL];
     _loop3.volume = 1.0;
     _loop3.channelIsMuted = YES;
     _loop3.loop = YES;
@@ -461,7 +462,7 @@ static int kInputChannelsChangedContext;
             cell.accessoryView = view;
             switch ( indexPath.row ) {
                 case 0: {
-                    cell.textLabel.text= @"Guitar";
+                    cell.textLabel.text= @"lowPassFiltered Impulse";
                     onSwitch.on = !_loop3.channelIsMuted;
                     slider.value = _loop3.volume;
                     [onSwitch addTarget:self action:@selector(loop3SwitchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -478,7 +479,7 @@ static int kInputChannelsChangedContext;
                 }
                     
                 case 2: {
-                    cell.textLabel.text= @"Snapping Fingers";
+                    cell.textLabel.text= @"Impulse";
                     onSwitch.on = !_loop1.channelIsMuted;
                     slider.value = _loop1.volume;
                     [onSwitch addTarget:self action:@selector(loop1SwitchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -1066,10 +1067,15 @@ static int kInputChannelsChangedContext;
             
             // run equalizer on left channel, out to buffer
           //  equalizer.processBuffer((float*)audio->mBuffers[0].mData, (float*)audio->mBuffers[0].mData, frames);
-
+            
+            float * buff =(float*)audio->mBuffers[0].mData;
+            if (!isnan(buff[0]) ){
             
             Reverb.processIFretlessBuffer((float*)audio->mBuffers[0].mData, frames, (float*)audio->mBuffers[0].mData  ,(float*) audio->mBuffers[1].mData);
-
+            }
+            else{
+                printf("buffer isnan");
+            }
             
 //            printf("left2 : %f right2: %f \n", left2[0], right2[0]);
 //            audio->mBuffers[0].mData = left2;
