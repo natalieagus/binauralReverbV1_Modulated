@@ -20,16 +20,26 @@ void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientatio
     // average space between each pair of points
     float pointSpacing = wallLength / numPoints;
     
+    Point2d prevStart = wallStart;
     // set the points at even but randomly jittered locations
     for (size_t i = 0; i < numPoints; i++) {
         float randFlt = (float)rand() / (float)RAND_MAX;
         bouncePoints[i] = getBP(pointSpacing, wallStart, i, wallOrientation, randFlt);
-        Point2d start = wallStart + wallOrientation.scalarMul(pointSpacing * i);
+        
+        if(i>0){
+            Point2d start = prevStart;
+            Point2d difference = (bouncePoints[i] - bouncePoints[i-1]).scalarMul(0.5f);
+            Point2d end = bouncePoints[i-1] + difference;
+            
+  //      Point2d start = wallStart + wallOrientation.scalarMul(pointSpacing * i);
         printf("start at: %f %f ", start.x, start.y);
-        Point2d end = wallStart + wallOrientation.scalarMul(pointSpacing * (i+1));
+    //    Point2d end = wallStart + wallOrientation.scalarMul(pointSpacing * (i+1));
         printf("end at: %f %f \n", end.x, end.y);
-        outputGains2[i] =  getOutputGain(start, end);
+        outputGains2[i-1] =  getOutputGain(start, end);
         printf("Result of outgain: %f \n", outputGains2[i]);
+            prevStart = Point2d(end.x, end.y);
+        }
+        
         
 //        float k = 0.0f;
 //        float increment = 1.0f;
@@ -44,6 +54,14 @@ void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientatio
 //        }
         
     }
+    //do the last gain
+    Point2d end = wallStart + wallOrientation.scalarMul(wallLength);
+    printf("start at: %f %f ", prevStart.x, prevStart.y);
+    //    Point2d end = wallStart + wallOrientation.scalarMul(pointSpacing * (i+1));
+    printf("end at: %f %f \n", end.x, end.y);
+    outputGains2[numPoints-1] =  getOutputGain(prevStart, end);
+    printf("One wall orientation done ======== \n");
+    
 }
 
 Point2d RoomRayModel::getBP(float pointSpacing, Point2d wallStart, size_t i, Point2d wallOrientation, float randFlt){
@@ -207,6 +225,7 @@ float RoomRayModel::getOutputGain(Point2d start, Point2d end){
         Point2d temp = Point2d(start.x, start.y);
         start = end;
         end = temp;
+        printf("swapped, start at %f %f end at %f %f \n", start.x, start.y, end.x, end.y);
     }
     
 
