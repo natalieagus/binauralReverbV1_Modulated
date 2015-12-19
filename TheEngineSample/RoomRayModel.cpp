@@ -16,25 +16,48 @@ RoomRayModel::RoomRayModel(){
     numCorners = 0;
 }
 
-void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientation, Point2d wallStart, float wallLength, size_t numPoints){
+void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientation, Point2d wallStart, float wallLength, size_t numPoints, float* outputGains2){
     // average space between each pair of points
     float pointSpacing = wallLength / numPoints;
     
     // set the points at even but randomly jittered locations
     for (size_t i = 0; i < numPoints; i++) {
         float randFlt = (float)rand() / (float)RAND_MAX;
-        float distance = (((float)i+randFlt) * pointSpacing);
-        bouncePoints[i] = wallStart + wallOrientation.scalarMul(distance);
-       // printf("BouncePoints : %f %f \n", bouncePoints[i].x, bouncePoints[i].y);
+        bouncePoints[i] = getBP(pointSpacing, wallStart, i, wallOrientation, randFlt);
+        Point2d start = wallStart + wallOrientation.scalarMul(pointSpacing * i);
+        printf("start at: %f %f ", start.x, start.y);
+        Point2d end = wallStart + wallOrientation.scalarMul(pointSpacing * (i+1));
+        printf("end at: %f %f \n", end.x, end.y);
+        outputGains2[i] =  getOutputGain(start, end);
+        printf("Result of outgain: %f \n", outputGains2[i]);
+        
+//        float k = 0.0f;
+//        float increment = 1.0f;
+//        while (bouncePoints[i].distance(listenerLoc) < 0.5f or ((bouncePoints[i].x - listenerLoc.x) < 0.25f and bouncePoints[i].distance(listenerLoc) < 1.0f)) {
+//            k = k + increment;
+//            bouncePoints[i] = getBP(pointSpacing, wallStart, i, wallOrientation, randFlt + 0.15f * k);
+//            if(bouncePoints[i].x > wallLength or bouncePoints[i].x < 0.0f or bouncePoints[i].y > wallLength or bouncePoints[i].y<0.0f){
+//                k = -1.0*k;
+//                increment = -1.0*increment;
+//            }
+//            bouncePoints[i] = getBP(pointSpacing, wallStart, i, wallOrientation, randFlt + 0.15f * k);
+//        }
+        
     }
 }
 
+Point2d RoomRayModel::getBP(float pointSpacing, Point2d wallStart, size_t i, Point2d wallOrientation, float randFlt){
+    float distance = (((float)i+randFlt) * pointSpacing);
+    Point2d bp = wallStart + wallOrientation.scalarMul(distance);
+    return bp;
+}
 
 //Raylength isnt used?
-void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* rayLengths, size_t numTaps, Point2d listenerLocation, Point2d soundSourceLocation, Point2d* bouncePoints){
+void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* rayLengths, size_t numTaps, Point2d listenerLocation, Point2d soundSourceLocation, Point2d* bouncePoints, float* outputGains2){
     
     assert(numCorners > 0); // the geometry must be initialised before now
-    
+    soundSourceLoc = soundSourceLocation;
+    listenerLoc = listenerLocation;
     
     // set the number of taps on each wall proportional to the
     // length of the wall
@@ -65,7 +88,7 @@ void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* ray
     for (size_t i = 0; i < numCorners; i++) {
         //must be corner i-1 or shift the corner values firston
       //  printf(" i = %lu, Wall orientation : %f %f, wallStart : %f %f, wallLength : %f TapsOnWall : %lu\n",i, wallOrientations[i].x, wallOrientations[i].y, corners[i].x, corners[i].y, wallLengths[i], numTapsOnWall[i] );
-        setBouncePoints(&bouncePoints[j], wallOrientations[i], corners[i], wallLengths[i], numTapsOnWall[i]);
+        setBouncePoints(&bouncePoints[j], wallOrientations[i], corners[i], wallLengths[i], numTapsOnWall[i],&outputGains2[j]);
         j += numTapsOnWall[i];
         
         // find the input gain scale for each point
@@ -79,10 +102,12 @@ void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* ray
         }
     }
     
+    
     // set input gain porportional to inGainScale/distance(source,bouncePoint)
     float totalSquaredInputGain = 0.0f;
     for (size_t i = 0; i < numTaps; i++) {
         inputGains[i] = inGainScale[i] / soundSourceLocation.distance(bouncePoints[i]);
+      //  printf("inputGain: %f\n",inputGains[i]);
         totalSquaredInputGain += inputGains[i]*inputGains[i];
     }
     
@@ -99,10 +124,24 @@ void RoomRayModel::setLocation(float* inputGains, float* outputGains, float* ray
         totalSquaredOutputGain += outputGains[i]*outputGains[i];
     }
     
-    // normalize the total input gain to 1.0f
+    // normalize the total out gain to 1.0f
     float outGainNormalize = 1.0f / sqrt(totalSquaredOutputGain);
     for (size_t i = 0; i < numTaps; i++) {
         outputGains[i] *= outGainNormalize;
+    }
+    
+    //normalize the total out gain2 to 1.0f
+    float totalSquaredOutputGain2 = 0.0f;
+    for (size_t i = 0; i< numTaps; i++){
+        printf("OutputGain2 : %f ", outputGains2[i]);
+        totalSquaredOutputGain2 += outputGains2[i]*outputGains2[i];
+        printf("totalSquare outputGain2 : %f \n", totalSquaredOutputGain2);
+    }
+  //  printf("totalSquare outputGain2 : %f \n", totalSquaredOutputGain2);
+    float outputGain2Normalize = 1.0f / sqrtf(totalSquaredOutputGain2);
+    for (size_t i = 0; i< numTaps; i++){
+        outputGains2[i] *= outputGain2Normalize;
+        printf("Normalized outputGain2 : %f \n", outputGains2[i]);
     }
 }
 
@@ -122,6 +161,7 @@ void RoomRayModel::setRoomGeometry(Point2d* corners, size_t numCorners){
     for (size_t i = 1; i < numCorners; i++) {
         // get orientation vector
         wallOrientations[i] = corners[i] - corners[i-1];
+
         
         // get wall length
         wallLengths[i] = wallOrientations[i].length();
@@ -156,4 +196,35 @@ void RoomRayModel::setRoomGeometry(Point2d* corners, size_t numCorners){
 //        printf("Wall orientation %d is %f %f \n", i, wallOrientations[i].x, wallOrientations[i].y);
 //        printf("Corners : %f %f \n", corners[i].x, corners[i].y);
 //    }
+}
+
+float RoomRayModel::getOutputGain(Point2d start, Point2d end){
+    Point2d normalized = (end - start).normalize();
+    
+    if (normalized.y < 0.0f){
+        normalized.y = -1.0f * normalized.y;
+        normalized.x = -1.0f * normalized.x;
+        Point2d temp = Point2d(start.x, start.y);
+        start = end;
+        end = temp;
+    }
+    
+
+    printf("Listener x %f, listener y %f \n", listenerLoc.x, listenerLoc.y);
+    printf("Normalized: %f %f ", normalized.x, normalized.y);
+    float t = (end.x - start.x)/normalized.x;
+    if(std::abs(t - 0.0f) <= 0.0001f){
+        t = (end.y - start.y) / normalized.y;
+    }
+    printf("t value: %f ", t);
+    float a = start.x * normalized.x - listenerLoc.x * normalized.x + t * pow(normalized.x, 2) + normalized.y * (start.y-listenerLoc.y + t * normalized.y);
+    printf("\n a value: %f ",a);
+    float b = pow((start.x - listenerLoc.x + t * normalized.x), 2) + pow((start.y - listenerLoc.y), 2) + 2 * t * (start.y-listenerLoc.y) * normalized.y + pow(t, 2) * pow(normalized.y, normalized.y);
+    printf("\n b value: %f ",b);
+    float c = normalized.length() * sqrtf(b);
+    printf("\n c value: %f ",c);
+    float d = 1/(normalized.length()) * log(a + c);
+    printf("\n d value: %f ", d);
+    return d;
+    
 }

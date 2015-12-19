@@ -521,10 +521,10 @@ void FDN::setParameterSafe(Parameter params){
     }
     for (int i = 0; i <numDelays; i++){
         delayTimes[i] = delayTimesNew[i];
-       // printf("%d,",delayTimes[i]);
+        printf("%d,",delayTimes[i]);
     }
     
-    //printf("\n\n====end=======\n\n");
+    printf("\n\n====end=======\n\n");
     
     setSingleTapDelay();
     setFilters();
@@ -994,20 +994,19 @@ void FDN::configureRoomRayModel(){
     //    }
     roomRayModel.setRoomGeometry(corners, 4);
     float rl[NUMTAPSSTD];
-    roomRayModel.setLocation(inputGains, outputGains, rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints);
+    roomRayModel.setLocation(inputGains, outputGains2, rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains);
     float rd = REFERENCEDISTANCE;
     directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
     
-    for (int i = 0; i<NUMTAPSSTD; i++){
-        outputGains[i] =  1.0/sqrt((float)numTaps);
-    }
     
-    
-    for(int i = 0; i<NUMTAPSSTD; i++){
-        printf("%f,",outputGains[i]);
-    }
-    
-    printf("\n\n ==== end ==== \n\n");
+//    for (int i = 0; i<NUMTAPSSTD; i++){
+//        printf("%f %f \n", roomBouncePoints[i].x, roomBouncePoints[i].y);
+//    }
+//    for(int i = 0; i<NUMTAPSSTD; i++){
+//        printf("%f,",outputGains[i]);
+//    }
+//    
+//    printf("\n\n ==== end ==== \n\n");
     
     
     

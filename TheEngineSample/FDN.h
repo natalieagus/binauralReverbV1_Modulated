@@ -12,8 +12,8 @@ FDN: a feedback delay network reverberator
 #define UNCIRCULATEDTAPSSMALL (2*DELAYUNITSSMALL*DELAYSPERUNIT)
 //#define UNCIRCULATEDTAPSSTD 2*DELAYUNITSSTD*DELAYSPERUNIT
 #define UNCIRCULATEDTAPSSTD 0
-#define EXTRADELAYS 2
-#define DELAYUNITSSTD (4 + EXTRADELAYS)
+#define EXTRADELAYS 2 //max 20
+#define DELAYUNITSSTD (4 + EXTRADELAYS) //max 150
 #define NUMDELAYSSTD (DELAYUNITSSTD * DELAYSPERUNIT)
 #define NUMTAPSSTD (NUMDELAYSSTD + UNCIRCULATEDTAPSSTD)
 #define AUDIOCHANNELS 2
@@ -73,6 +73,7 @@ protected:
     Point2d roomBouncePoints[NUMTAPSSTD];
     size_t delayTimesChannel[NUMTAPSSTD];
     float directMix, reverbMix;
+    float outputGains2[NUMTAPSSTD];
     
     void setTempPoints();
     Point2d tempPoints[CHANNELS];
