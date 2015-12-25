@@ -994,10 +994,12 @@ void FDN::configureRoomRayModel(){
     //    }
     roomRayModel.setRoomGeometry(corners, 4);
     float rl[NUMTAPSSTD];
-    roomRayModel.setLocation(inputGains, outputGains2, rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains);
+    roomRayModel.setLocation(inputGains2, outputGains2, rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains, inputGains);
     float rd = REFERENCEDISTANCE;
     directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
-    
+    if (directMix > 1.5f){
+        directMix = 1.5f;
+    }
     
 //    for (int i = 0; i<NUMTAPSSTD; i++){
 //        printf("%f %f \n", roomBouncePoints[i].x, roomBouncePoints[i].y);

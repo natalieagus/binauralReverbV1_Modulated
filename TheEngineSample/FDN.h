@@ -61,6 +61,8 @@ protected:
     RoomRayModel roomRayModel;
     float inputGains[NUMTAPSSTD];
     float outputGains[NUMTAPSSTD];
+    float inputGains2[NUMTAPSSTD];
+    float outputGains2[NUMTAPSSTD];
     
     void configureRoomRayModel();
     
@@ -73,7 +75,7 @@ protected:
     Point2d roomBouncePoints[NUMTAPSSTD];
     size_t delayTimesChannel[NUMTAPSSTD];
     float directMix, reverbMix;
-    float outputGains2[NUMTAPSSTD];
+
     
     void setTempPoints();
     Point2d tempPoints[CHANNELS];

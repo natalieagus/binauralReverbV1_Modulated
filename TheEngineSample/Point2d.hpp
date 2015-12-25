@@ -20,6 +20,7 @@ typedef struct Point2d {
     Point2d normalize();
     Point2d scalarMul(float s);
     Point2d normal();
+    
     float x,y;
     
     bool mark;
