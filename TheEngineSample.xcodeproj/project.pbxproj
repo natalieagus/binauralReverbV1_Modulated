@@ -8,19 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2C2707E11BDF31C900EFD5CD /* DoubleBufferedReverb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C2707DF1BDF31C900EFD5CD /* DoubleBufferedReverb.cpp */; };
-		2C3C6C511C21380D004A63A8 /* restaurant.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C501C21380D004A63A8 /* restaurant.wav */; settings = {ASSET_TAGS = (); }; };
 		2C3C6C551C21618F004A63A8 /* acapellafemale.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C531C21618F004A63A8 /* acapellafemale.wav */; settings = {ASSET_TAGS = (); }; };
-		2C3C6C581C2161F3004A63A8 /* guitar.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C571C2161F3004A63A8 /* guitar.wav */; settings = {ASSET_TAGS = (); }; };
 		2C3C6C5A1C2163E2004A63A8 /* acapellafemale2.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C591C2163E2004A63A8 /* acapellafemale2.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A03D1C076E8D0054BA3A /* acapella.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A0341C076E8D0054BA3A /* acapella.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A03E1C076E8D0054BA3A /* allofthestars.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A0351C076E8D0054BA3A /* allofthestars.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A03F1C076E8D0054BA3A /* button.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A0361C076E8D0054BA3A /* button.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A0401C076E8D0054BA3A /* design.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A0371C076E8D0054BA3A /* design.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A0411C076E8D0054BA3A /* design2.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A0381C076E8D0054BA3A /* design2.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A0421C076E8D0054BA3A /* hello.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A0391C076E8D0054BA3A /* hello.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A0431C076E8D0054BA3A /* road.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A03A1C076E8D0054BA3A /* road.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A0441C076E8D0054BA3A /* snap.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A03B1C076E8D0054BA3A /* snap.wav */; settings = {ASSET_TAGS = (); }; };
-		2C72A0451C076E8D0054BA3A /* someonelikeyou.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C72A03C1C076E8D0054BA3A /* someonelikeyou.wav */; settings = {ASSET_TAGS = (); }; };
 		2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */; };
 		2CCA78F81C227A13006B8D46 /* fullSpectrumImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */; settings = {ASSET_TAGS = (); }; };
 		2CCA78F91C227A13006B8D46 /* lowpassFilteredImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */; settings = {ASSET_TAGS = (); }; };
@@ -93,19 +82,8 @@
 /* Begin PBXFileReference section */
 		2C2707DF1BDF31C900EFD5CD /* DoubleBufferedReverb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DoubleBufferedReverb.cpp; sourceTree = "<group>"; };
 		2C2707E01BDF31C900EFD5CD /* DoubleBufferedReverb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DoubleBufferedReverb.h; sourceTree = "<group>"; };
-		2C3C6C501C21380D004A63A8 /* restaurant.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = restaurant.wav; sourceTree = "<group>"; };
 		2C3C6C531C21618F004A63A8 /* acapellafemale.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = acapellafemale.wav; sourceTree = "<group>"; };
-		2C3C6C571C2161F3004A63A8 /* guitar.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = guitar.wav; sourceTree = "<group>"; };
 		2C3C6C591C2163E2004A63A8 /* acapellafemale2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = acapellafemale2.wav; sourceTree = "<group>"; };
-		2C72A0341C076E8D0054BA3A /* acapella.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = acapella.wav; sourceTree = "<group>"; };
-		2C72A0351C076E8D0054BA3A /* allofthestars.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = allofthestars.wav; sourceTree = "<group>"; };
-		2C72A0361C076E8D0054BA3A /* button.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = button.wav; sourceTree = "<group>"; };
-		2C72A0371C076E8D0054BA3A /* design.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = design.wav; sourceTree = "<group>"; };
-		2C72A0381C076E8D0054BA3A /* design2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = design2.wav; sourceTree = "<group>"; };
-		2C72A0391C076E8D0054BA3A /* hello.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = hello.wav; sourceTree = "<group>"; };
-		2C72A03A1C076E8D0054BA3A /* road.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = road.wav; sourceTree = "<group>"; };
-		2C72A03B1C076E8D0054BA3A /* snap.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = snap.wav; sourceTree = "<group>"; };
-		2C72A03C1C076E8D0054BA3A /* someonelikeyou.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = someonelikeyou.wav; sourceTree = "<group>"; };
 		2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parameter.cpp; sourceTree = "<group>"; };
 		2C7CD63B1BE0C920000F26E2 /* Parameter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Parameter.hpp; sourceTree = "<group>"; };
 		2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = fullSpectrumImpulse.wav; sourceTree = "<group>"; };
@@ -207,21 +185,10 @@
 		2C72A0331C076D550054BA3A /* soundsamples */ = {
 			isa = PBXGroup;
 			children = (
-				2C72A0341C076E8D0054BA3A /* acapella.wav */,
-				2C72A0351C076E8D0054BA3A /* allofthestars.wav */,
-				2C72A0361C076E8D0054BA3A /* button.wav */,
 				2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */,
 				2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */,
-				2C72A0371C076E8D0054BA3A /* design.wav */,
-				2C3C6C571C2161F3004A63A8 /* guitar.wav */,
-				2C72A0381C076E8D0054BA3A /* design2.wav */,
-				2C72A0391C076E8D0054BA3A /* hello.wav */,
-				2C3C6C501C21380D004A63A8 /* restaurant.wav */,
 				2C3C6C531C21618F004A63A8 /* acapellafemale.wav */,
 				2C3C6C591C2163E2004A63A8 /* acapellafemale2.wav */,
-				2C72A03A1C076E8D0054BA3A /* road.wav */,
-				2C72A03B1C076E8D0054BA3A /* snap.wav */,
-				2C72A03C1C076E8D0054BA3A /* someonelikeyou.wav */,
 			);
 			name = soundsamples;
 			sourceTree = "<group>";
@@ -458,27 +425,16 @@
 				2C3C6C551C21618F004A63A8 /* acapellafemale.wav in Resources */,
 				4C0C24B01599FD5800D23E13 /* Icon.png in Resources */,
 				2CE69B941BCCE35F00072C04 /* person.png in Resources */,
-				2C72A0441C076E8D0054BA3A /* snap.wav in Resources */,
-				2C72A03F1C076E8D0054BA3A /* button.wav in Resources */,
 				2CE69B9A1BCCE50300072C04 /* Speaker.png in Resources */,
-				2C72A0411C076E8D0054BA3A /* design2.wav in Resources */,
 				4C0C24B11599FD5800D23E13 /* Icon@2x.png in Resources */,
 				4C0C24B21599FD5800D23E13 /* Organ Run.m4a in Resources */,
 				4C0C24B31599FD5800D23E13 /* Southern Rock Drums.m4a in Resources */,
-				2C3C6C511C21380D004A63A8 /* restaurant.wav in Resources */,
 				4C0C24B41599FD5800D23E13 /* Southern Rock Organ.m4a in Resources */,
-				2C72A0451C076E8D0054BA3A /* someonelikeyou.wav in Resources */,
-				2C72A0401C076E8D0054BA3A /* design.wav in Resources */,
-				2C72A03E1C076E8D0054BA3A /* allofthestars.wav in Resources */,
 				4C7C680F16F1609800721E60 /* README.markdown in Resources */,
 				4C09450A170001660054608E /* Default-568h@2x.png in Resources */,
-				2C3C6C581C2161F3004A63A8 /* guitar.wav in Resources */,
-				2C72A0421C076E8D0054BA3A /* hello.wav in Resources */,
 				4C09450B170001660054608E /* Default.png in Resources */,
 				2CCA78F91C227A13006B8D46 /* lowpassFilteredImpulse.wav in Resources */,
-				2C72A0431C076E8D0054BA3A /* road.wav in Resources */,
 				2CCA78F81C227A13006B8D46 /* fullSpectrumImpulse.wav in Resources */,
-				2C72A03D1C076E8D0054BA3A /* acapella.wav in Resources */,
 				4C09450C170001660054608E /* Default@2x.png in Resources */,
 				4C09450D170001660054608E /* Default~ipad.png in Resources */,
 			);

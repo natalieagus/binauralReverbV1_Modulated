@@ -481,6 +481,8 @@ void FDN::setParameter(Parameter params){
 }
 
 void FDN::setParameterSafe(Parameter params){
+    
+    printf("Begin Parameter setting:\n");
     parametersFDN = newParametersFDN;
     reverbOn = parametersFDN.roomSize > 0.05;
     
@@ -502,8 +504,11 @@ void FDN::setParameterSafe(Parameter params){
     // setRoomBouncePoints();
     // setRoomBouncePointsVer2();
     
+    printf("Configuring Room Ray Model.. \n");
     configureRoomRayModel();
+    printf("Setting Delay Channels.. \n");
     setDelayChannels();
+    printf("Calculating Delay Times..\n");
     setDelayTimes();
     setDirectDelayTimes();
     setDirectRayAngles();
@@ -511,6 +516,7 @@ void FDN::setParameterSafe(Parameter params){
     shortenDelayTimes();
     shuffleDelays();
     
+    printf("Calculating Additional Delays..\n");
     setTempPoints();
     calculateAdditionalDelays();
 
@@ -519,14 +525,16 @@ void FDN::setParameterSafe(Parameter params){
     if (!parametersFDN.roomRayModelOn){
         configureRandomModel(parametersFDN.roomSize);
     }
+    
+    printf("Printing Delay Times..\n");
     for (int i = 0; i <numDelays; i++){
         delayTimes[i] = delayTimesNew[i];
         printf("%d,",delayTimes[i]);
     }
     
-    printf("\n\n====end=======\n\n");
-    
     setSingleTapDelay();
+    
+    printf("\nSetting Filters.. \n");
     setFilters();
     
     
@@ -543,6 +551,7 @@ void FDN::setParameterSafe(Parameter params){
     setHighPassCutoff(hpfCutoffHZ / (SAMPLINGRATEF*0.5));
     
     resetTapAttenuation(parametersFDN.RT60);
+        printf("\n\n======end=======\n\n");
 }
 
 void FDN::shortenDelayTimes(){
@@ -786,6 +795,7 @@ void FDN::shuffleDelays(){
         }
     }
     
+    
     //copy over
     for (int i = 0; i<numDelays; i++){
         delayTimesChannel[i] = delayTimesChannelNew[i];
@@ -994,7 +1004,7 @@ void FDN::configureRoomRayModel(){
     //    }
     roomRayModel.setRoomGeometry(corners, 4);
     float rl[NUMTAPSSTD];
-    roomRayModel.setLocation(inputGains2, outputGains2, rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains, inputGains);
+    roomRayModel.setLocation(rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains, inputGains);
     float rd = REFERENCEDISTANCE;
     directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
     if (directMix > 1.5f){
@@ -1031,12 +1041,6 @@ void FDN::configureRoomRayModel(){
   
     
 }
-
-//Randomise delay times
-//add delay in random places
-//Use the matlab difference to see what types of filter to use
-//Bell and highshelf to see which frequency point is useful
-
 
 void FDN::configureRandomModel(float roomSize){
     // the roomSize variable scales decay time, linearly interpolating between the min and max values

@@ -41,7 +41,7 @@ public:
     
     void setRoomGeometry(Point2d* corners, size_t numCorners);
     
-    void setLocation(float* inputGains, float* outputGains, float* rayLengths,size_t numTaps, Point2d listenerLocation, Point2d soundSourceLocation, Point2d* bouncePoints, float* outputGains2, float* inputGains2);
+    void setLocation(float* rayLengths,size_t numTaps, Point2d listenerLocation, Point2d soundSourceLocation, Point2d* bouncePoints, float* outputGains2, float* inputGains2);
     
     
 

@@ -131,7 +131,7 @@ static int kInputChannelsChangedContext;
     _loop2.loop = YES;
     
     // Create the third loop player
-    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"lowpassFilteredImpulse" withExtension:@"wav"] error:NULL];
+    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"adele" withExtension:@"mp3"] error:NULL];
     _loop3.volume = 1.0;
     _loop3.channelIsMuted = YES;
     _loop3.loop = YES;
