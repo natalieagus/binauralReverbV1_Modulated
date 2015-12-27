@@ -43,6 +43,10 @@ static int kInputChannelsChangedContext;
     float rSize;
     float rt60Val;
     float wRatio;
+    
+    bool reverbOn;
+    bool directOn;
+    
 
 }
 @property (nonatomic, strong) AEAudioController *audioController;
@@ -79,6 +83,9 @@ static int kInputChannelsChangedContext;
 
 - (id)initWithAudioController:(AEAudioController*)audioController {
     if ( !(self = [super initWithStyle:UITableViewStyleGrouped]) ) return nil;
+    
+    reverbOn = true;
+    directOn = true;
     
     ssLock = false;
     
@@ -131,7 +138,7 @@ static int kInputChannelsChangedContext;
     _loop2.loop = YES;
     
     // Create the third loop player
-    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"adele" withExtension:@"mp3"] error:NULL];
+    self.loop3 = [AEAudioFilePlayer audioFilePlayerWithURL:[[NSBundle mainBundle] URLForResource:@"lowpassFilteredImpulse" withExtension:@"wav"] error:NULL];
     _loop3.volume = 1.0;
     _loop3.channelIsMuted = YES;
     _loop3.loop = YES;
@@ -592,7 +599,7 @@ static int kInputChannelsChangedContext;
 //                }
                 case 1: {
                     cell.textLabel.text = @"Direct Portion On";
-                    ((UISwitch*)cell.accessoryView).on = true;
+                    ((UISwitch*)cell.accessoryView).on = directOn;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(directPortionChanged:) forControlEvents:UIControlEventValueChanged];
 //                    UISlider *inputGainSlider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 100, 40)];
 //                    inputGainSlider.minimumValue = 0.0;
@@ -605,7 +612,7 @@ static int kInputChannelsChangedContext;
                 case 2: {
                     cell.textLabel.text = @"Reverb Portion On";
                     
-                    ((UISwitch*)cell.accessoryView).on = true;
+                    ((UISwitch*)cell.accessoryView).on = reverbOn;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(reverbPortionChanged:) forControlEvents:UIControlEventValueChanged];
 //                    int channelCount = _audioController.numberOfInputChannels;
 //                    CGSize buttonSize = CGSizeMake(30, 30);
@@ -644,7 +651,7 @@ static int kInputChannelsChangedContext;
                 case 4:{
                     cell.textLabel.text = @"Lock Soundsource On";
                     
-                    ((UISwitch*)cell.accessoryView).on = false;
+                    ((UISwitch*)cell.accessoryView).on = ssLock;
                     [((UISwitch*)cell.accessoryView) addTarget:self action:@selector(soundSourceLock:) forControlEvents:UIControlEventValueChanged];
                     break;
                 }
@@ -941,6 +948,7 @@ static int kInputChannelsChangedContext;
 
 - (void)directPortionChanged:(UISwitch*)sender {
     Reverb.setDirectONOFF(sender.on);
+    directOn = sender.on;
     
 }
 
@@ -955,6 +963,8 @@ static int kInputChannelsChangedContext;
 
 - (void)reverbPortionChanged:(UISwitch*)sender {
     Reverb.setReverbONOFF(sender.on) ;
+    reverbOn = sender.on;
+    
     
 }
 - (void)measurementModeSwitchChanged:(UISwitch*)sender {

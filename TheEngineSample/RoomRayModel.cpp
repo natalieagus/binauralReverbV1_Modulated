@@ -35,8 +35,8 @@ void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientatio
         //    printf("\nstart at: %f %f ", start.x, start.y);
     //    Point2d end = wallStart + wallOrientation.scalarMul(pointSpacing * (i+1));
           //  printf("end at: %f %f \n", end.x, end.y);
-            outputGains2[i-1] = xAlignedIntegration(listenerLoc, start, end);
-            inputGains2[i-1] = xAlignedIntegration(soundSourceLoc, start, end);
+            outputGains2[i-1] = xAlignedIntegration(listenerLoc, start, end, true);
+            inputGains2[i-1] = xAlignedIntegration(soundSourceLoc, start, end, false);
            // printf("Result of outgain: %f \n", outputGains2[i-1]);
            // printf("Result of ingain: %f \n", inputGains2[i-1]);
             prevStart = Point2d(end.x, end.y);
@@ -49,8 +49,8 @@ void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientatio
   //  printf("start at: %f %f ", prevStart.x, prevStart.y);
     //    Point2d end = wallStart + wallOrientation.scalarMul(pointSpacing * (i+1));
  //   printf("end at: %f %f \n", end.x, end.y);
-    outputGains2[numPoints-1] = xAlignedIntegration(listenerLoc, prevStart, end);
-    inputGains2[numPoints-1] = xAlignedIntegration(soundSourceLoc, prevStart, end);
+    outputGains2[numPoints-1] = xAlignedIntegration(listenerLoc, prevStart, end, true);
+    inputGains2[numPoints-1] = xAlignedIntegration(soundSourceLoc, prevStart, end, false);
   //  printf("Outgain: %f \n", outputGains2[numPoints-1]);
   //  printf("Ingain: %f \n", outputGains2[numPoints-1]);
     
@@ -141,15 +141,15 @@ void RoomRayModel::setLocation(float* rayLengths, size_t numTaps, Point2d listen
 //        inputGains[i] *= inGainNormalize;
 //    }
     
-    // set input gain porportional to inGainScale
+       // normalize the total input gain to 1.0f
     float totalSquaredInputGain2 = 0.0f;
     for (size_t i = 0; i < numTaps; i++) {
-        inputGains2[i] *= inGainScale[i];
+   //     inputGains2[i] *= inGainScale[i];
         //   printf("inputGain2: %f\n",inputGains2[i]);
         totalSquaredInputGain2 += inputGains2[i]*inputGains2[i];
     }
     
-    // normalize the total input gain to 1.0f
+
     float inGainNormalize2 = 1.0f / sqrt(totalSquaredInputGain2);
     for (size_t i = 0; i < numTaps; i++) {
         inputGains2[i] *= inGainNormalize2;
@@ -263,10 +263,15 @@ float RoomRayModel::integrate(Point2d start,  Point2d end, float t, Point2d loc,
 }
 
 //Simpler integration method
-float RoomRayModel::integrationSimple(Point2d loc, float x){
+float RoomRayModel::integrationSimple(Point2d loc, float x, bool listLoc){
     float value = (x-loc.x)/loc.y;
    // printf("Value is : %f \n", value);
+    if (listLoc){
     return asinhf(value);
+    }
+    else{
+    return atanf(value);
+    }
 }
 
 Point2d  RoomRayModel::align(Point2d point, Point2d wallvector){
@@ -279,7 +284,7 @@ Point2d  RoomRayModel::align(Point2d point, Point2d wallvector){
 }
 
 //this returns the gain, can be used for both input and output
-float  RoomRayModel::xAlignedIntegration(Point2d loc, Point2d ptStart, Point2d ptEnd){
+float  RoomRayModel::xAlignedIntegration(Point2d loc, Point2d ptStart, Point2d ptEnd, bool listLoc){
     Point2d wallVector = ptEnd - ptStart;
   //  printf("Wall vector: %f %f \n", wallVector.x, wallVector.y);
     
@@ -294,9 +299,9 @@ float  RoomRayModel::xAlignedIntegration(Point2d loc, Point2d ptStart, Point2d p
     alignedEnd = alignedEnd - alignedStart;
     alignedLoc = alignedLoc - alignedStart;
     
-    float endVal = integrationSimple(alignedLoc, alignedEnd.x);
+    float endVal = integrationSimple(alignedLoc, alignedEnd.x, listLoc);
    // printf("endVal: %f ", endVal);
-    float startVal = integrationSimple(alignedLoc, 0.0f);
+    float startVal = integrationSimple(alignedLoc, 0.0f, listLoc);
   //  printf("startVal: %f \n", startVal);
     
     return endVal - startVal;

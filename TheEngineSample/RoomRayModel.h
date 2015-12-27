@@ -32,9 +32,9 @@ private:
     float integrate(Point2d start, Point2d end, float t, Point2d loc, Point2d vn);
     
     //Simple integration method
-    float integrationSimple(Point2d loc, float x);
+    float integrationSimple(Point2d loc, float x, bool listLoc);
     Point2d align(Point2d point, Point2d wallvector);
-    float xAlignedIntegration(Point2d loc, Point2d ptStart, Point2d ptEnd);
+    float xAlignedIntegration(Point2d loc, Point2d ptStart, Point2d ptEnd, bool listLoc);
     
 public:
     RoomRayModel();
