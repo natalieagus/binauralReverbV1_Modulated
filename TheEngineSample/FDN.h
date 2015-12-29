@@ -61,8 +61,6 @@ protected:
     RoomRayModel roomRayModel;
     float inputGains[NUMTAPSSTD];
     float outputGains[NUMTAPSSTD];
-    float inputGains2[NUMTAPSSTD];
-    float outputGains2[NUMTAPSSTD];
     
     void configureRoomRayModel();
     
@@ -71,11 +69,9 @@ protected:
     void setParameterSafe(Parameter params);
     
     float directDelayTimes[2]; //unit = FREQ * seconds
-    float delayTimesNew[NUMTAPSSTD]; //unit = FREQ * seconds
     Point2d roomBouncePoints[NUMTAPSSTD];
     size_t delayTimesChannel[NUMTAPSSTD];
-    float directMix, reverbMix;
-
+    float directMix;
     
     void setTempPoints();
     Point2d tempPoints[CHANNELS];
@@ -83,32 +79,16 @@ protected:
     float additionalDelays[8];
     SingleTapDelay reverbDelays[8];
     void addReverbDelay(float* fdnLeft, float*fdnRight);
-    
-    void setRoomBouncePointsVer2();
-   // Point2d roomBouncePoints2[NUMTAPSSTD];
 
-
-    //To calculate delays
-    //Method to calculate delay times based in randomised 72 points in the room, output to delayTimes[NUMTAPSSTD]
     void setDelayTimes();
-    //Method to calculate delay times based on 2 direct signals
     void setDirectDelayTimes();
-    //Method to generate random 72 points on the wall
-    void setRoomBouncePoints();
-    //Method to get random for wall points
-    int getRandom();
-    //Method to calculate line distance
-    float getDistance(float x1, float x2, float y1, float y2);
-    //Method to sort delay times
     void sortDelayTimes();
-   // void quickSort(int arr[], int arr2[], int left, int right);
     void shortenDelayTimes();
     
     //To handle direct Rays
     SingleTapDelay directRays[2];
-    void setSingleTapDelay();
+    void setDirectSingleTapDelay();
     void processDirectRays(float* input, float* directRaysOutput);
-    
     
     //To do channel angle calculations
     void setDelayChannels();
@@ -120,7 +100,7 @@ protected:
     //setting tankout of 8 channels
     void processTankOut(float fdnTankOut[CHANNELS]);
 
-    //To do binaural filters
+    //Binaural filters
     FirstOrderFilter leftEarFilter[CHANNELS];
     FirstOrderFilter rightEarFilter[CHANNELS];
     FirstOrderFilter directRayFilter[2];
@@ -191,44 +171,21 @@ protected:
     int one_i = 1;
     float zero_f = 0.0f;
     
-    // filter on dry input
-    float f0b0, f0b1, f0a1, f0z1;
-    
-    // filter on reverb input
-    float f1b0, f1b1, f1a1, f1z1;
-    
     float inputAttenuation;
 	float matrixAttenuation;
-   // float wetPercent, dryPercent;
-    float mix1, mix2;
-    float tone;
-   // float roomSize;
     
     void updateRand();
-	//void resetFeedbackAttenuation(float rt60);
 	void resetTapAttenuation(float rt60);
 	void resetReadIndices();
     void setHFDecayMultiplier(float fc, float hfMult, float rt60);
     void incrementIndices();
     void processReverb(float* pInput, float* pOutputL, float* pOutputR);
-    void processTone(float* pInput, float* pOutput);
     void resetDelay(int totalDelayTime);
-    void setDryHighShelfAttenuation(float fc, float g);
-    void setDryLowPassCutoff(float fc);
-    void setHighPassCutoff(float fc);
-    //void resetEarlyReflections(float erStart, float erEnd);
 
     void initialise(bool powerSaveMode);
-    void randomPermutation(int* a, int length, int channels);
-    void randomPermutation2channelGrouped(int* a, int length);
-    void shiftPermutation1channel(int* a, int length, int shift);
-    void cyclicGroupPermutation2channel(int* a, int length, int shift);
-    void randomPermutation1Channel(int* a, int length, int audioChannels);
     
-    bool roomSizeNeedsUpdate;
-    bool toneFilterOn, reverbOn, useHPF, lowPassTone;
-    float newRoomSize = 450;
-    float minTone, maxTone;
+    bool reverbOn;
+
 
     
 };
