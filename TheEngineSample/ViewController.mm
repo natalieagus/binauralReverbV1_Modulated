@@ -43,6 +43,12 @@ static int kInputChannelsChangedContext;
     bool reverbOn;
     bool directOn;
     
+    float xDiff;
+    float yDiff;
+    
+    float xLloc;
+    float yLloc;
+    
 
 }
 @property (nonatomic, strong) AEAudioController *audioController;
@@ -88,6 +94,12 @@ static int kInputChannelsChangedContext;
     autoSoundMove = false;
     angle = 0.0f;
         self.soundSourceTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(moveSoundSource:) userInfo:nil repeats:YES];
+    
+    xLloc = self.tableView.bounds.size.width/2-25;
+    yLloc = 2*self.tableView.bounds.size.width/3;
+    
+    xDiff = self.tableView.bounds.size.width/2-25 - xLloc;
+    yDiff = self.tableView.bounds.size.width/3 - yLloc;
     
     Listener = [UIButton buttonWithType:UIButtonTypeCustom];
     [Listener addTarget:self action:@selector(listenerTouched:withEvent:) forControlEvents:UIControlEventTouchDragInside|UIControlEventTouchDragOutside];
@@ -541,9 +553,18 @@ static int kInputChannelsChangedContext;
     sender.center = point;
     
     if (ssLock){
-        CGPoint ssP = CGPointMake(point.x, point.y - self.tableView.bounds.size.width * 0.4f);
+        CGPoint ssP = CGPointMake(point.x + xDiff, point.y + yDiff);
         if (ssP.y < 0.0f){
-            ssP.y = -ssP.y;
+            ssP.y = 0.0f;
+        }
+        if (ssP.x < 0.0f){
+            ssP.x = 0.0f;
+        }
+        if (ssP.x > self.tableView.bounds.size.width){
+            ssP.x = self.tableView.bounds.size.width;
+        }
+        if (ssP.y > self.tableView.bounds.size.width){
+            ssP.y = self.tableView.bounds.size.width;
         }
         SoundSource.center = ssP;
     }
@@ -551,10 +572,15 @@ static int kInputChannelsChangedContext;
 
 - (void) listenerTouchedEnds:(UIButton*) sender withEvent:(UIEvent*) event{
     CGPoint p = sender.center;
+    
+    xLloc = p.x;
+    yLloc = p.y;
+    
     float x = p.x / self.tableView.bounds.size.width;
     float y = p.y / self.tableView.bounds.size.width;
 
     float loc[2] = {x,y};
+
     
     if (!ssLock){
     Reverb.setListenerLocation(loc);
@@ -573,9 +599,16 @@ static int kInputChannelsChangedContext;
     
     if (!ssLock){
     CGPoint p = sender.center;
+    
+        xDiff = p.x - xLloc;
+        yDiff = p.y - yLloc;
+        
     float x = p.x / self.tableView.bounds.size.width;
     float y = p.y / self.tableView.bounds.size.width;
+    
+        
     float loc[2] = {x,y};
+    
     
     Reverb.setSoundLocation(loc);
     }

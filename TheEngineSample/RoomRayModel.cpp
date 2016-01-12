@@ -16,7 +16,7 @@ RoomRayModel::RoomRayModel(){
     numCorners = 0;
 }
 
-void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientation, Point2d wallStart, float wallLength, size_t numPoints, float* outputGains, float* inputGains){
+void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientation, Point2d wallStart, float wallLength, size_t numPoints, float* outputGains, float* inputGains, bool bpSet){
     // average space between each pair of points
     float pointSpacing = wallLength / numPoints;
     
@@ -24,6 +24,8 @@ void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientatio
     // set the points at even but randomly jittered locations
     for (size_t i = 0; i < numPoints; i++) {
         float randFlt = (float)rand() / (float)RAND_MAX;
+        
+        if (!bpSet)
         bouncePoints[i] = getBP(pointSpacing, wallStart, i, wallOrientation, randFlt);
         
         if(i>0){
@@ -50,8 +52,43 @@ Point2d RoomRayModel::getBP(float pointSpacing, Point2d wallStart, size_t i, Poi
     return bp;
 }
 
+
+void RoomRayModel::gridBP(Point2d* floorBouncePoints, size_t floorTaps){
+    float xSpacing = wallLengths[0] / floorTaps;
+    float ySpacing = wallLengths[1] / floorTaps;
+    
+    for (size_t i = 0; i < floorTaps; i++){ //y
+        for (size_t j = 0; j < floorTaps; j++) { //x
+            float randFltX = (float)rand() / (float)RAND_MAX;
+            float randFltY = (float)rand() / (float)RAND_MAX;
+            //printf("index  %lu : ", i*floorTaps+j);
+            floorBouncePoints[i*floorTaps + j] = Point2d(((float)j + randFltX) * xSpacing, ((float)i + randFltY) * ySpacing);
+            //printf(" --- PT x %f y %f \n", floorBouncePoints[i*floorTaps + j].x, floorBouncePoints[i*floorTaps + j].y);
+        }
+    }
+}
+
+void RoomRayModel::setFloorBouncePointsGain(Point2d* bouncePoints, float* inputGain, float* outputGain, size_t floorTaps){
+    for (size_t i = 0; i < floorTaps; i++){
+        inputGain[i] = pythagorasGain(soundSourceLoc, bouncePoints[i], 1.65f);
+        outputGain[i] = pythagorasGain(listenerLoc, bouncePoints[i], 1.65f);
+    }
+}
+
+float RoomRayModel::pythagorasGain(Point2d loc, Point2d bouncePoint, float height){
+    return 1.0f/sqrtf( powf(loc.distance(bouncePoint), 2.f) + powf((1.f + (height-1.f)*(float)rand()/float(RAND_MAX)), 2.f));
+}
+
 //Raylength isnt used?
-void RoomRayModel::setLocation(float* rayLengths, size_t numTaps, Point2d listenerLocation, Point2d soundSourceLocation, Point2d* bouncePoints, float* outputGains, float* inputGains){
+void RoomRayModel::setLocation(float* rayLengths, size_t numTaps, Point2d listenerLocation, Point2d soundSourceLocation, Point2d* bouncePoints, float* outputGains, float* inputGains, bool bpSet, Point2d* floorBouncePoints, size_t floorTaps){
+    
+    if (bpSet){
+        printf("BP is set, no need to generate new points\n");
+    }
+    
+    printf("Numtaps is: %lu, floorTaps is : %lu", numTaps, floorTaps);
+    numTaps -= floorTaps;
+    floorTapsPerDimension = (size_t) sqrtf(floorTaps);
     
     assert(numCorners > 0); // the geometry must be initialised before now
     soundSourceLoc = soundSourceLocation;
@@ -76,25 +113,31 @@ void RoomRayModel::setLocation(float* rayLengths, size_t numTaps, Point2d listen
         if (i == RRM_MAX_CORNERS) i = 0;
     }
     
-    float inGainScale[NUMTAPSSTD];
+//    float inGainScale[NUMTAPSSTD];
     
     // set bounce points for each wall
     size_t j = 0;
-    size_t k = 0;
     for (size_t i = 0; i < numCorners; i++) {
         //must be corner i-1 or shift the corner values firston
-        setBouncePoints(&bouncePoints[j], wallOrientations[i], corners[i], wallLengths[i], numTapsOnWall[i],&outputGains[j],&inputGains[j]);
+        setBouncePoints(&bouncePoints[j], wallOrientations[i], corners[i], wallLengths[i], numTapsOnWall[i],&outputGains[j],&inputGains[j], bpSet);
         j += numTapsOnWall[i];
-        
-        // find the input gain scale for each point (angle)
-        while (k < j) {
-            Point2d sourceToBouncePoint = (soundSourceLocation - bouncePoints[k]).normalize();
-            Point2d wallNormal = wallOrientations[i].normal();
-            inGainScale[k] = fabsf( wallNormal.dotProduct(sourceToBouncePoint));
-            //TODO: does ingainscale have to be +ve?
-            k++;
-        }
     }
+    
+ 
+    // set bounce points for the floor
+    if (!bpSet){
+    gridBP(&bouncePoints[j], floorTapsPerDimension);
+    }
+    setFloorBouncePointsGain(&bouncePoints[j], &inputGains[j], &outputGains[j], floorTaps);
+    
+    //printout Bouncepoints
+    
+    numTaps += floorTaps;
+    
+//    printf("Bouncepoints X & Y printout: \n");
+//    for (int i = 0; i < numTaps ; i++){
+//        printf("index %d x %f, y %f \n",i, bouncePoints[i].x, bouncePoints[i].y);
+//    }
     
     // normalize the total input gain to 1.0f
     float totalSquaredInputGain = 0.0f;
@@ -105,9 +148,10 @@ void RoomRayModel::setLocation(float* rayLengths, size_t numTaps, Point2d listen
     float inGainNormalize = 1.0f / sqrt(totalSquaredInputGain);
     for (size_t i = 0; i < numTaps; i++) {
         inputGains[i] *= inGainNormalize;
+        printf("inputGains[%lu] : %f \n", i, inputGains[i]);
     }
     
-    //normalize the total out gain2 to 1.0f
+    //normalize the total out gain to 1.0f
     float totalSquaredOutputGain = 0.0f;
     for (size_t i = 0; i< numTaps; i++){
         totalSquaredOutputGain += outputGains[i]*outputGains[i];
@@ -116,7 +160,10 @@ void RoomRayModel::setLocation(float* rayLengths, size_t numTaps, Point2d listen
     float outputGainNormalize = 1.0f / sqrtf(totalSquaredOutputGain);
     for (size_t i = 0; i< numTaps; i++){
         outputGains[i] *= outputGainNormalize;
+        printf("OutputGain[%lu] : %f \n", i, outputGains[i]);
     }
+    
+
 }
 
 

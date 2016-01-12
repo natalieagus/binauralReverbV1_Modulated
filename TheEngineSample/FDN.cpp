@@ -55,6 +55,7 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     
     // copy output taps to pre-filtered output buffer
     //rwIndices are output taps pointer
+    
     vDSP_vgathra (const_cast<const float**>(rwIndices), 1, outputsPF, 1, numTaps);
     
     // scale the output taps according to the feedBackTapGains
@@ -234,17 +235,17 @@ FDN::FDN(bool powerSaveMode)
 
 void FDN::initialise(bool powerSaveMode){
     
-    if (powerSaveMode){
-        numDelays = DELAYUNITSSMALL*DELAYSPERUNIT;
-        delayUnits = DELAYUNITSSMALL;
-        numUncirculatedTaps = UNCIRCULATEDTAPSSMALL;
-        printf("powersave");
-    }
-    else {
+//    if (powerSaveMode){
+//        numDelays = DELAYUNITSSMALL*DELAYSPERUNIT;
+//        delayUnits = DELAYUNITSSMALL;
+//        numUncirculatedTaps = UNCIRCULATEDTAPSSMALL;
+//        printf("powersave");
+//    }
+//    else {
         numDelays = NUMDELAYSSTD;
         delayUnits = DELAYUNITSSTD;
         numUncirculatedTaps = UNCIRCULATEDTAPSSTD;
-    }
+
     
     numTaps = numDelays + numUncirculatedTaps;
     
@@ -252,6 +253,11 @@ void FDN::initialise(bool powerSaveMode){
     
     parametersFDN =  Parameter();
     setParameterSafe(parametersFDN);
+    
+    //Comment this out if different bouncepoints are desired at each parameter change
+    bouncepointSet = true;
+    
+    
 }
 
 void FDN::resetReadIndices(){
@@ -422,8 +428,6 @@ void FDN::setParameterSafe(Parameter params){
     parametersFDN = newParametersFDN;
     reverbOn = parametersFDN.roomSize > 0.05;
     
-    float hpfCutoffHZ = 85.0;
-    
     randomSeed = 0; // reset the seed every time for consistent results
     
     // this is required to keep the mixing matrices unitary
@@ -437,17 +441,28 @@ void FDN::setParameterSafe(Parameter params){
     
     printf("Calculating Delay Times..\n");
     setDelayTimes();
+    
+
     setDirectDelayTimes();
     setDirectRayAngles();
     shortenDelayTimes();
-    shuffleDelays();
+
+    //reset the extradelays index to be zero
+    for (int i = 0; i < EXTRADELAYS * DELAYSPERUNIT; i++){
+        inputGains[NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT) + i] = 0.0f;
+        outputGains[NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT) + i] = 0.0f;
+    }
+    printf("Printing Parameters: \n");
     
-    printf("Printing Delay Times..\n");
-    for (int i = 0; i <numDelays; i++){
-        printf("%d,",delayTimes[i]);
+    for (int i = 0 ; i < numTaps ; i++){
+        printf("Index : %d, delay : %d, inputGain : %f, outputGain: %f, bouncePoint :x  %f y %f\n",i, delayTimes[i], inputGains[i], outputGains[i], roomBouncePoints[i].x, roomBouncePoints[i].y);
     }
     
-    printf("Calculating Additional Delays..\n");
+   
+    shuffleDelays();
+
+    
+    printf("Calculating Additional Single Tap Delays..\n");
     setTempPoints();
     calculateAdditionalDelays();
     
@@ -471,6 +486,8 @@ void FDN::setParameterSafe(Parameter params){
     setHFDecayMultiplier(8000.0f,1.5f,parametersFDN.RT60);
     
     resetTapAttenuation(parametersFDN.RT60);
+    
+ 
     printf("\n\n======Setting End=======\n\n");
 }
 
@@ -481,7 +498,7 @@ void FDN::configureRoomRayModel(){
     
     roomRayModel.setRoomGeometry(corners, 4);
     float rl[NUMTAPSSTD];
-    roomRayModel.setLocation(rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains, inputGains);
+    roomRayModel.setLocation(rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains, inputGains, bouncepointSet, floorBouncePoints, FLOORDELAYS);
     float rd = REFERENCEDISTANCE;
     directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
     
@@ -496,6 +513,7 @@ void FDN::setDelayChannels(){
     for (size_t i = 0; i < NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT); i++){
         delayTimesChannel[i] = determineChannel(roomBouncePoints[i].x, roomBouncePoints[i].y);
     }
+    
 }
 
 //Calculate delay time for each delay tap in the FDN
