@@ -40,6 +40,10 @@ private:
     float pythagorasGain(Point2d loc, Point2d bouncePoint, float height);
     
     size_t floorTapsPerDimension;
+    
+    float getMaxGain(float xLower, float xUpper, float yLower, float yUpper);
+    float calcMaxGain(float x, float y);
+    float maxGain = 44.0687f;
 public:
     RoomRayModel();
     
