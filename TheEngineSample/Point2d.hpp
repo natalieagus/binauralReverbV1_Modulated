@@ -12,8 +12,8 @@
 #include <stdio.h>
 
 typedef struct Point2d {
-    Point2d(float x, float y){this->x = x; this->y = y; this->mark = true;};
-    Point2d(){x = 0.0f; y = 0.0f;};
+    Point2d(float x, float y){this->x = x; this->y = y; this->mark = true;z = 0.0f;};
+    Point2d(){x = 0.0f; y = 0.0f; z = 0.0f;};
     float distance(Point2d p);
     float length();
     float dotProduct(Point2d p);
@@ -21,7 +21,7 @@ typedef struct Point2d {
     Point2d scalarMul(float s);
     Point2d normal();
     
-    float x,y;
+    float x,y,z;
     
     bool mark;
     

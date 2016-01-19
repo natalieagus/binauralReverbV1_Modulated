@@ -13,10 +13,11 @@ FDN: a feedback delay network reverberator
 //#define UNCIRCULATEDTAPSSTD 2*DELAYUNITSSTD*DELAYSPERUNIT
 #define UNCIRCULATEDTAPSSTD 0
 #define EXTRADELAYS 2
-#define FLOORUNITS 4
+#define FLOORUNITS 9 //4 * FLOORUNITS >= FLOORDELAYS
 #define DELAYUNITSSTD (4 + EXTRADELAYS + FLOORUNITS)
 #define NUMDELAYSSTD (DELAYUNITSSTD * DELAYSPERUNIT)  
-#define FLOORDELAYS 16 //PUT min 16, can try more 25, 36, 64 HERE, ensure FLOORDELAYS < 0.5*NUMDELAYSSTD
+#define FLOORDELAYS 36 //PUT min 16, can try more 25, 36, 64 HERE, ensure FLOORDELAYS < 0.5*NUMDELAYSSTD
+#define SMOOTHINGDELAYS ((EXTRADELAYS * DELAYSPERUNIT) + (FLOORUNITS * DELAYSPERUNIT) - FLOORDELAYS)
 #define NUMTAPSSTD (NUMDELAYSSTD + UNCIRCULATEDTAPSSTD)
 #define AUDIOCHANNELS 2
 #define SAMPLINGRATEF 44100.0f
@@ -57,7 +58,7 @@ protected:
     
     Point2d floorBouncePoints[FLOORDELAYS];
     
-    bool bouncepointSet = false;
+//    bool bouncepointSet = false;
     void configureRandomModel(float roomSize);
     
     Delays reverbDelayValues[NUMTAPSSTD];

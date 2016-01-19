@@ -254,8 +254,6 @@ void FDN::initialise(bool powerSaveMode){
     parametersFDN =  Parameter();
     setParameterSafe(parametersFDN);
     
-    //Comment this out if different bouncepoints are desired at each parameter change
-    bouncepointSet = true;
     
     
 }
@@ -448,14 +446,18 @@ void FDN::setParameterSafe(Parameter params){
     shortenDelayTimes();
 
     //reset the extradelays index to be zero
-    for (int i = 0; i < EXTRADELAYS * DELAYSPERUNIT; i++){
-        inputGains[NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT) + i] = 0.0f;
-        outputGains[NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT) + i] = 0.0f;
+    for (int i = 0; i < SMOOTHINGDELAYS; i++){
+        inputGains[NUMTAPSSTD - (SMOOTHINGDELAYS) + i] = 0.0f;
+        outputGains[NUMTAPSSTD - (SMOOTHINGDELAYS) + i] = 0.0f;
     }
     printf("Printing Parameters: \n");
     
+    printf("Listener loc : %f %f \n", parametersFDN.listenerLoc.x, parametersFDN.listenerLoc.y);
     for (int i = 0 ; i < numTaps ; i++){
-        printf("Index : %d, delay : %d, inputGain : %f, outputGain: %f, bouncePoint :x  %f y %f\n",i, delayTimes[i], inputGains[i], outputGains[i], roomBouncePoints[i].x, roomBouncePoints[i].y);
+        printf("Index : %d, delay : %d, inputGain : %f, outputGain: %f, bouncePoint :x  %f y %f z %f\n",i, delayTimes[i], inputGains[i], outputGains[i], roomBouncePoints[i].x, roomBouncePoints[i].y, roomBouncePoints[i].z);
+        if (parametersFDN.listenerLoc.distance(roomBouncePoints[i])<0.5f){
+            printf ("YES\n");
+        }
     }
     
    
@@ -487,7 +489,21 @@ void FDN::setParameterSafe(Parameter params){
     
     resetTapAttenuation(parametersFDN.RT60);
     
- 
+    float totalGleft = 0.0f;
+    float totalGright = 0.0f;
+    for (int i = 0; i < NUMTAPSSTD; i++){
+        if (roomBouncePoints[i].x < parametersFDN.listenerLoc.x){
+            totalGleft += inputGains[i];
+            totalGleft += outputGains[i];
+        }
+        else{
+            totalGright += inputGains[i];
+            totalGright += outputGains[i];
+        }
+    }
+    
+    printf("Left Gain Total : %f Right Gain Total %f \n", totalGleft, totalGright);
+    
     printf("\n\n======Setting End=======\n\n");
 }
 
@@ -498,7 +514,7 @@ void FDN::configureRoomRayModel(){
     
     roomRayModel.setRoomGeometry(corners, 4);
     float rl[NUMTAPSSTD];
-    roomRayModel.setLocation(rl, NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains, inputGains, bouncepointSet, floorBouncePoints, FLOORDELAYS);
+    roomRayModel.setLocation(rl, NUMTAPSSTD - (SMOOTHINGDELAYS), parametersFDN.listenerLoc, parametersFDN.soundSourceLoc, roomBouncePoints, outputGains, inputGains, floorBouncePoints, FLOORDELAYS);
     float rd = REFERENCEDISTANCE;
     directMix = rd / parametersFDN.soundSourceLoc.distance(parametersFDN.listenerLoc);
     
@@ -510,7 +526,7 @@ void FDN::configureRoomRayModel(){
 
 //Configure channel of each point
 void FDN::setDelayChannels(){
-    for (size_t i = 0; i < NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT); i++){
+    for (size_t i = 0; i < NUMTAPSSTD - (SMOOTHINGDELAYS); i++){
         delayTimesChannel[i] = determineChannel(roomBouncePoints[i].x, roomBouncePoints[i].y);
     }
     
@@ -519,7 +535,7 @@ void FDN::setDelayChannels(){
 //Calculate delay time for each delay tap in the FDN
 inline void FDN::setDelayTimes(){
     
-    for (int i = 0; i<NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT); i++){
+    for (int i = 0; i<NUMTAPSSTD - (SMOOTHINGDELAYS + FLOORDELAYS); i++){
         
         //if on the left of listener, use left ear x_pts < x_listener
         //if on the right of listener, use right ear x_pts >= x_listener
@@ -544,6 +560,31 @@ inline void FDN::setDelayTimes(){
             reverbDelayValues[i] = Delays(delayTimes[i],i,i,i);
         }
     }
+    
+    for (int i = (NUMTAPSSTD - (SMOOTHINGDELAYS + FLOORDELAYS)); i < NUMTAPSSTD - SMOOTHINGDELAYS; i++){
+            size_t ch = delayTimesChannel[i];
+        if (ch < CHANNELS/2){
+            //use right ear
+            float d1 = sqrtf( powf(roomBouncePoints[i].distance(parametersFDN.soundSourceLoc), 2.f) + powf(roomBouncePoints[i].z, 2.f));
+            float d2 = sqrtf( powf(roomBouncePoints[i].distance(parametersFDN.listenerLocRightEar), 2.f) + powf(roomBouncePoints[i].z, 2.f));
+            float td = (d1 + d2);
+            float delaySeconds = td / SOUNDSPEED;
+            delayTimes[i] = delaySeconds * SAMPLINGRATEF;
+            reverbDelayValues[i] = Delays(delayTimes[i],i,i,i);
+        }
+        else{
+            //use left ear
+            float d1 = sqrtf( powf(roomBouncePoints[i].distance(parametersFDN.soundSourceLoc), 2.f) + powf(roomBouncePoints[i].z, 2.f));
+            float d2 = sqrtf( powf(roomBouncePoints[i].distance(parametersFDN.listenerLocLeftEar), 2.f) + powf(roomBouncePoints[i].z, 2.f));
+            float td = (d1 + d2);
+            float delaySeconds = td / SOUNDSPEED;
+            delayTimes[i] = delaySeconds * SAMPLINGRATEF;
+            reverbDelayValues[i] = Delays(delayTimes[i],i,i,i);
+        }
+        
+        
+    }
+    
 }
 
 //Setting direct delay value for two direct rays
@@ -601,7 +642,7 @@ inline void FDN::shortenDelayTimes(){
 
     float minReverb = MAXFLOAT;
     
-    for (int i = 0; i < NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT); i++){
+    for (int i = 0; i < NUMTAPSSTD - (SMOOTHINGDELAYS); i++){
         float d = delayTimes[i] ;
         if (d < minReverb){
             minReverb = d;
@@ -619,10 +660,10 @@ inline void FDN::shortenDelayTimes(){
     }
     
     //ADD EXTRA DELAYS
-    for (int i = 0; i < (EXTRADELAYS * DELAYSPERUNIT); i++){
-        delayTimes[i + NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT)] = uni(rd);
+    for (int i = 0; i < (SMOOTHINGDELAYS); i++){
+        delayTimes[i + NUMTAPSSTD - (SMOOTHINGDELAYS)] = uni(rd);
       //  printf("extradelay : %f \n",          delayTimesNew[i + NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT)]);
-        reverbDelayValues[i + NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT)] = Delays(delayTimes[i+NUMTAPSSTD - (EXTRADELAYS * DELAYSPERUNIT)], -1, -1, -1);
+        reverbDelayValues[i + NUMTAPSSTD - (SMOOTHINGDELAYS)] = Delays(delayTimes[i+NUMTAPSSTD - (SMOOTHINGDELAYS)], -1, -1, -1);
         
     }
 }
