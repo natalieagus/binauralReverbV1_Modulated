@@ -73,18 +73,18 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     
     //Processing outputs
     vDSP_vmul(outputGains, 1, outputsPF, 1, outputsPF, 1, numTaps);
-    processDirectRays(pInput, directRaysOutput);
+    processDirectRays(pInput, directRaysOutput); //delays the rays
     
     if (parametersFDN.roomRayModelOn){
-    processTankOut(fdnTankOutsNew);
+    processTankOut(fdnTankOutsNew); //convert to 8 channels from outputTaps
     
     float fdnTankOutLeft[CHANNELS] = {};
     float fdnTankOutRight[CHANNELS] = {};
-    filterChannels(fdnTankOutsNew, directRaysOutput, fdnTankOutLeft, fdnTankOutRight);
+    filterChannels(fdnTankOutsNew, directRaysOutput, fdnTankOutLeft, fdnTankOutRight); //HRTF
     
     float reverbOut[2] = {0.0f, 0.0f};
     
-    addReverbDelay(fdnTankOutLeft, fdnTankOutRight);
+    addReverbDelay(fdnTankOutLeft, fdnTankOutRight); //Temp point delays
     vDSP_sve(fdnTankOutLeft, 1, &reverbOut[0], CHANNELS);
     vDSP_sve(fdnTankOutRight, 1, &reverbOut[1], CHANNELS);
     
