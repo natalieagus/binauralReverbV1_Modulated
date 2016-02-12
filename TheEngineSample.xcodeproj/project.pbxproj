@@ -8,13 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		2C2707E11BDF31C900EFD5CD /* DoubleBufferedReverb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C2707DF1BDF31C900EFD5CD /* DoubleBufferedReverb.cpp */; };
-		2C3C6C551C21618F004A63A8 /* acapellafemale.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C531C21618F004A63A8 /* acapellafemale.wav */; settings = {ASSET_TAGS = (); }; };
-		2C3C6C5A1C2163E2004A63A8 /* acapellafemale2.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C591C2163E2004A63A8 /* acapellafemale2.wav */; settings = {ASSET_TAGS = (); }; };
+		2C3C6C551C21618F004A63A8 /* acapellafemale.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C531C21618F004A63A8 /* acapellafemale.wav */; };
+		2C3C6C5A1C2163E2004A63A8 /* acapellafemale2.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C591C2163E2004A63A8 /* acapellafemale2.wav */; };
 		2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */; };
-		2CCA78F81C227A13006B8D46 /* fullSpectrumImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */; settings = {ASSET_TAGS = (); }; };
-		2CCA78F91C227A13006B8D46 /* lowpassFilteredImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */; settings = {ASSET_TAGS = (); }; };
+		2CCA78F81C227A13006B8D46 /* fullSpectrumImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */; };
+		2CCA78F91C227A13006B8D46 /* lowpassFilteredImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */; };
 		2CD0C0A31BE7A9E1009D9971 /* SecondOrderFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */; };
-		2CE0CEF21BF572BD00E9699E /* Delays.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE0CEF01BF572BD00E9699E /* Delays.cpp */; settings = {ASSET_TAGS = (); }; };
+		2CE0CEF21BF572BD00E9699E /* Delays.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE0CEF01BF572BD00E9699E /* Delays.cpp */; };
 		2CE69B8B1BC5068100072C04 /* SingleTapDelay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CE69B891BC5068100072C04 /* SingleTapDelay.cpp */; };
 		2CE69B941BCCE35F00072C04 /* person.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B931BCCE35F00072C04 /* person.png */; };
 		2CE69B9A1BCCE50300072C04 /* Speaker.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE69B991BCCE50300072C04 /* Speaker.png */; };
@@ -378,6 +378,11 @@
 			attributes = {
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "A Tasty Pixel";
+				TargetAttributes = {
+					4C0C24841599FADD00D23E13 = {
+						DevelopmentTeam = A8UU6B3KC9;
+					};
+				};
 			};
 			buildConfigurationList = 4C0C247F1599FADD00D23E13 /* Build configuration list for PBXProject "TheEngineSample" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -569,6 +574,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_USE_OPTIMIZATION_PROFILE = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_FAST_MATH = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TheEngineSample/TheEngineSample-Prefix.pch";
@@ -584,6 +591,7 @@
 				LLVM_LTO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.atastypixel.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -593,6 +601,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_USE_OPTIMIZATION_PROFILE = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_FAST_MATH = YES;
 				GCC_OPTIMIZATION_LEVEL = fast;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -605,6 +615,7 @@
 				LLVM_LTO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.atastypixel.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

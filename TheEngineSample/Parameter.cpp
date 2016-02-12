@@ -10,7 +10,7 @@
 
 void Parameter::setListenerLocation(Point2d Ratio){
     this->listenerXYRatio = Ratio;
-    
+   // printf("Ratio Listener : x %f, y %f \n ", Ratio.x, Ratio.y);
     this->listenerLoc = Point2d(this->roomWidth * Ratio.x, this->roomHeight * Ratio.y);
     this->listenerLocLeftEar.x = this->listenerLoc.x - RADIUSOFHEAD;
     this->listenerLocLeftEar.y = this->listenerLoc.y;
@@ -20,6 +20,7 @@ void Parameter::setListenerLocation(Point2d Ratio){
 
 void Parameter::setSoundLocation(Point2d Ratio){
     this->soundXYRatio = Ratio;
+    //    printf("Ratio Soundsource : x %f, y %f \n ", Ratio.x, Ratio.y);
     this->soundSourceLoc = Point2d(this->roomWidth * Ratio.x, this->roomHeight * Ratio.y);
 }
 

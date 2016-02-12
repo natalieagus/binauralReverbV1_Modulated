@@ -44,7 +44,6 @@ private:
     float getMaxGain(float xLower, float xUpper, float yLower, float yUpper);
     float calcMaxGain(float x, float y);
     float maxFloorGain = 1.55463f;
-  //  float maxoutGain = 0.927295f;
     float gridArea;
 public:
     RoomRayModel();

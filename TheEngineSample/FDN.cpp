@@ -51,7 +51,7 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     // copy the filtered input so that we can process it without affecting the original value
     float xn = *pInput;
     float fdnTankOutsNew[CHANNELS] = {};
-    float directRaysOutput[2] = { 0.0f, 0.0f };
+    float directRaysOutput[2] = { *pInput * directMix, *pInput * directMix };
     
     // copy output taps to pre-filtered output buffer
     //rwIndices are output taps pointer
@@ -73,8 +73,8 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     
     //Processing outputs
     vDSP_vmul(outputGains, 1, outputsPF, 1, outputsPF, 1, numTaps);
-    processDirectRays(pInput, directRaysOutput); //delays the rays
-    
+
+    //TODO swap delay and HRTF for direct
     if (parametersFDN.roomRayModelOn){
     processTankOut(fdnTankOutsNew); //convert to 8 channels from outputTaps
     
@@ -83,13 +83,13 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     filterChannels(fdnTankOutsNew, directRaysOutput, fdnTankOutLeft, fdnTankOutRight); //HRTF
     
     float reverbOut[2] = {0.0f, 0.0f};
-    
+    processDirectRays(directRaysOutput, directRaysOutput); //delays the rays
     addReverbDelay(fdnTankOutLeft, fdnTankOutRight); //Temp point delays
     vDSP_sve(fdnTankOutLeft, 1, &reverbOut[0], CHANNELS);
     vDSP_sve(fdnTankOutRight, 1, &reverbOut[1], CHANNELS);
     
-    *pOutputL = (directRaysOutput[0]*directMix*directPortionOn - reverbOut[0]*reverbPortionOn);
-    *pOutputR = (directRaysOutput[1]*directMix*directPortionOn - reverbOut[1]*reverbPortionOn);
+    *pOutputL = (directRaysOutput[0]*directPortionOn - reverbOut[0]*reverbPortionOn);
+    *pOutputR = (directRaysOutput[1]*directPortionOn - reverbOut[1]*reverbPortionOn);
     }
     
     else{
@@ -199,8 +199,8 @@ inline void FDN::addReverbDelay(float* fdnLeft, float*fdnRight){
 }
 
 inline void FDN::processDirectRays(float* input, float* directRaysOutput){
-    directRaysOutput[0] = directRays[0].process(*input);
-    directRaysOutput[1] = directRays[1].process(*input);
+    directRaysOutput[0] = directRays[0].process(input[0]);
+    directRaysOutput[1] = directRays[1].process(input[1]);
 }
 
 
@@ -263,6 +263,7 @@ void FDN::resetReadIndices(){
     rwIndices[numUncirculatedTaps] = startIndices[numUncirculatedTaps] = (float*)delayBuffers;
     endIndices[numUncirculatedTaps] = startIndices[numUncirculatedTaps] + delayTimes[numUncirculatedTaps];
     
+    //print delay times
     for (int i = 0; i < numTaps;i++) assert(delayTimes[i] > 0);
     
     // set start / end indices for the second feedback delay tap onwards
@@ -422,6 +423,8 @@ void FDN::setParameter(Parameter params){
 
 void FDN::setParameterSafe(Parameter params){
     
+
+    
     printf("Begin Parameter setting:\n");
     parametersFDN = newParametersFDN;
     reverbOn = parametersFDN.roomSize > 0.05;
@@ -450,16 +453,6 @@ void FDN::setParameterSafe(Parameter params){
         inputGains[NUMTAPSSTD - (SMOOTHINGDELAYS) + i] = 0.0f;
         outputGains[NUMTAPSSTD - (SMOOTHINGDELAYS) + i] = 0.0f;
     }
-    printf("Printing Parameters: \n");
-    
-    printf("Listener loc : %f %f \n", parametersFDN.listenerLoc.x, parametersFDN.listenerLoc.y);
-    for (int i = 0 ; i < numTaps ; i++){
-        printf("Index : %d, delay : %d, inputGain : %f, outputGain: %f, bouncePoint :x  %f y %f z %f\n",i, delayTimes[i], inputGains[i], outputGains[i], roomBouncePoints[i].x, roomBouncePoints[i].y, roomBouncePoints[i].z);
-        if (parametersFDN.listenerLoc.distance(roomBouncePoints[i])<0.5f){
-            printf ("YES\n");
-        }
-    }
-    
    
     shuffleDelays();
 
@@ -478,14 +471,30 @@ void FDN::setParameterSafe(Parameter params){
     printf("\nSetting Filters.. \n");
     setFilters();
     
+    
     int totalDelayTime = 0;
     for(int i = numUncirculatedTaps; i < numTaps; i++) totalDelayTime += delayTimes[i];
     resetDelay(totalDelayTime);
+    
+ 
+    printf("Printing Parameters: \n");
+    
+    printf("Listener loc : %f %f \n", parametersFDN.listenerLoc.x, parametersFDN.listenerLoc.y);
+    for (int i = 0 ; i < numTaps ; i++){
+        printf("Index : %d, delay : %d, inputGain : %f, outputGain: %f, bouncePoint :x  %f y %f z %f\n",i, delayTimes[i], inputGains[i], outputGains[i], roomBouncePoints[i].x, roomBouncePoints[i].y, roomBouncePoints[i].z);
+        if (parametersFDN.listenerLoc.distance(roomBouncePoints[i])<0.5f){
+            printf ("YES\n");
+        }
+    }
+    
+    
     resetReadIndices();
     
     
     // set high-frequency attenuation
-    setHFDecayMultiplier(8000.0f,1.5f,parametersFDN.RT60);
+ //   setHFDecayMultiplier(8000.0f,1.5f,parametersFDN.RT60);
+    
+    setHFDecayMultiplier(2000.f,3.0f,parametersFDN.RT60);
     
     resetTapAttenuation(parametersFDN.RT60);
     

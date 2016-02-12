@@ -37,8 +37,8 @@ void RoomRayModel::setBouncePoints(Point2d* bouncePoints, Point2d wallOrientatio
 
             outputGains[i-1] =  sqrtf( xAlignedIntegration(listenerLoc, start, end, true));
             inputGains[i-1] = sqrtf(xAlignedIntegration(soundSourceLoc, start, end, false));
-                    printf("OutputGain[%lu] : %f \n", i-1, outputGains[i-1]);
-                    printf("InputGain[%lu] : %f \n", i-1, inputGains[i-1]);
+                   // printf("OutputGain[%lu] : %f \n", i-1, outputGains[i-1]);
+                   // printf("InputGain[%lu] : %f \n", i-1, inputGains[i-1]);
 //            if (outputGains[i-1]>maxoutGain){
 //                outputGains[i-1]=maxoutGain;
 //            }
@@ -189,7 +189,7 @@ void RoomRayModel::setLocation(float* rayLengths, size_t numTaps, Point2d listen
     // normalize the total input gain to 1.0f
     float totalSquaredInputGain = 0.0f;
     for (size_t i = 0; i < numTaps; i++) {
-        inputGains[i] = fabsf(inputGains[i]);
+        inputGains[i] = fabsf(inputGains[i]*ROOMCEILING); //multiply by the room ceiling
         totalSquaredInputGain += inputGains[i]*inputGains[i];
     }
 

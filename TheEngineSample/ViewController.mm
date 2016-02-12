@@ -12,7 +12,7 @@
 #import "AEPlaythroughChannel.h"
 #import "AEExpanderFilter.h"
 #import "AELimiterFilter.h"
-#import "AERecorder.h"
+
 #import <QuartzCore/QuartzCore.h>
 #import "FDN.h"
 #import "MultiLevelBiQuadFilter.h"
@@ -89,11 +89,11 @@ static int kInputChannelsChangedContext;
     
     rSize = 0.15f;
     wRatio = 0.5f;
-    rt60Val = 0.7f;
+    rt60Val = 0.4f;
     
     autoSoundMove = false;
     angle = 0.0f;
-        self.soundSourceTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(moveSoundSource:) userInfo:nil repeats:YES];
+        self.soundSourceTimer = [NSTimer scheduledTimerWithTimeInterval:5.0 target:self selector:@selector(moveSoundSource:) userInfo:nil repeats:YES];
     
     xLloc = self.tableView.bounds.size.width/2-25;
     yLloc = 2*self.tableView.bounds.size.width/3;
@@ -391,7 +391,7 @@ static int kInputChannelsChangedContext;
             cell.accessoryView = view;
             switch ( indexPath.row ) {
                 case 0: {
-                    cell.textLabel.text= @"lowPassFiltered Impulse";
+                    cell.textLabel.text= @"sinesweep";
                     onSwitch.on = !_loop3.channelIsMuted;
                     slider.value = _loop3.volume;
                     [onSwitch addTarget:self action:@selector(loop3SwitchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -460,7 +460,7 @@ static int kInputChannelsChangedContext;
                     cell.textLabel.text= @"RT60 Value";
                     UISlider *rt60Slider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
                     rt60Slider.minimumValue = 0.2f;
-                    rt60Slider.maximumValue = 3.0f;
+                    rt60Slider.maximumValue = 10.0f;
                     rt60Slider.value = rt60Val;
                     [rt60Slider setContinuous:NO];
                     [rt60Slider addTarget:self action:@selector(rt60SizeChanged:) forControlEvents:UIControlEventValueChanged];
@@ -581,7 +581,7 @@ static int kInputChannelsChangedContext;
 
     float loc[2] = {x,y};
 
-    
+   // printf("Listener location is now : %f %f ", loc[0], loc[1]);
     if (!ssLock){
     Reverb.setListenerLocation(loc);
     }
@@ -611,6 +611,7 @@ static int kInputChannelsChangedContext;
     
     
     Reverb.setSoundLocation(loc);
+     //   printf("Sound location is now : %f %f \n", loc[0], loc[1]);
     }
 }
 
@@ -709,16 +710,19 @@ static int kInputChannelsChangedContext;
 
 -(void)roomSizeChanged:(UISlider*)slider {
     Reverb.setRoomSize(slider.value);
+    printf("Room size is now : %f \n", slider.value);
     rSize = slider.value;
 }
 
 - (void) rt60SizeChanged: (UISlider*)slider{
     Reverb.setRT60(slider.value);
+    printf("RT60 is now : %f \n", slider.value);
     rt60Val = slider.value;
 }
 
 - (void) widthRatioSizeChanged: (UISlider*) slider{
     Reverb.setWidthRatio(slider.value);
+    printf("Width Ratio is now : %f \n", slider.value);
     wRatio = slider.value;
 }
 
@@ -807,42 +811,55 @@ static inline float translate(float val, float min, float max) {
     return (val - min) / (max - min);
 }
 
+float soundSourceLoc[10][2] = {{0.2, 0.9},{0.4,1.0},{0.9, 0.2},{0.3,0.3},{0.7,0.7},{0.1,0.8},{0,0},{1,1},{0.8,0.4},{0.3,0.9}};
+
+int indexSoundSource = 0;
+
 
 - (void) moveSoundSource: (NSTimer*) timer{
-    if (autoSoundMove && counter % 15 == 0){
-        counter = 0;
- 
-        CGFloat x = Listener.frame.origin.x + sin(angle) * 300.f;
-        if (x > self.tableView.bounds.size.width){
-            x =self.tableView.bounds.size.width;
-        }
-        CGFloat y = Listener.frame.origin.y + cos(angle) * 300.f;
-        if ( y >  self.tableView.bounds.size.width){
-            y =  self.tableView.bounds.size.width;
-        }
+    if (autoSoundMove ){
+//        counter = 0;
+// 
+//        CGFloat x = Listener.frame.origin.x + sin(angle) * 300.f;
+//        if (x > self.tableView.bounds.size.width){
+//            x =self.tableView.bounds.size.width;
+//        }
+//        CGFloat y = Listener.frame.origin.y + cos(angle) * 300.f;
+//        if ( y >  self.tableView.bounds.size.width){
+//            y =  self.tableView.bounds.size.width;
+//        }
+//        
+//        if (x < 0){
+//            x = 0.0f;
+//        }
+//        if (y < 0){
+//            y = 0.0f;
+//        }
         
-        if (x < 0){
-            x = 0.0f;
-        }
-        if (y < 0){
-            y = 0.0f;
-        }
-        
-        float xf = x / self.tableView.bounds.size.width;
-        float yf = y / self.tableView.bounds.size.width;
-        float loc[2] = {xf,yf};
-        CGPoint p = CGPointMake(x, y);
+        float x = 1.f-soundSourceLoc[indexSoundSource][0];
+        float y = 1.f-soundSourceLoc[indexSoundSource][1];
+        float xproc = x * self.tableView.bounds.size.width;
+        float yproc = y * self.tableView.bounds.size.width;
+//        float xf = x / self.tableView.bounds.size.width;
+//        float yf = y / self.tableView.bounds.size.width;
+        float loc[2] = {x,y};
+        CGPoint p = CGPointMake(xproc, yproc);
         SoundSource.center = p;
         
         Reverb.setSoundLocation(loc);
+        
+        indexSoundSource++;
+        if (indexSoundSource > 9){
+            indexSoundSource = 0;
+        }
     }
     
-    if (angle > 2.f * M_PI){
-        angle -= 2.f*M_PI;
-    }
+//    if (angle > 2.f * M_PI){
+//        angle -= 2.f*M_PI;
+//    }
     
     counter ++;
-    angle += 0.015f;
+//    angle += 0.015f;
 }
 
 - (void)updateLevels:(NSTimer*)timer {
