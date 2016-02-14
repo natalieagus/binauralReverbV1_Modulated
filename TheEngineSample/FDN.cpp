@@ -51,7 +51,7 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     // copy the filtered input so that we can process it without affecting the original value
     float xn = *pInput;
     float fdnTankOutsNew[CHANNELS] = {};
-    float directRaysOutput[2] = { *pInput * directMix, *pInput * directMix };
+    float directRaysOutput[2] = { xn * directMix, xn * directMix };
     
     // copy output taps to pre-filtered output buffer
     //rwIndices are output taps pointer
@@ -95,8 +95,8 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     else{
         
         //Filter direct rays
-        directRaysOutput[0] = directRayFilter[0].process(*pInput);
-        directRaysOutput[1] = directRayFilter[1].process(*pInput);
+        directRaysOutput[0] = directRayFilter[0].process(xn);
+        directRaysOutput[1] = directRayFilter[1].process(xn);
         
         float FDNRandomTankOuts[2] = { 0.0f, 0.0f };
         
@@ -264,7 +264,11 @@ void FDN::resetReadIndices(){
     endIndices[numUncirculatedTaps] = startIndices[numUncirculatedTaps] + delayTimes[numUncirculatedTaps];
     
     //print delay times
-    for (int i = 0; i < numTaps;i++) assert(delayTimes[i] > 0);
+    for (int i = 0; i < numTaps;i++){
+        if (delayTimes[i] < 1){
+            delayTimes[i] = 10;
+        }
+    };
     
     // set start / end indices for the second feedback delay tap onwards
     for (int i = numUncirculatedTaps + 1; i < numTaps; i++){

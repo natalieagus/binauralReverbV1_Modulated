@@ -88,7 +88,9 @@ void SingleTapDelay::processBuffer(float *input, float *output, size_t numFrames
 // safely request a delay time update at the next available opportunity
 void SingleTapDelay::setTimeSafe(float seconds){
  //  printf("seconds: %f \n", seconds);
-    assert(seconds >= 0);
+    if (seconds < 0.0f){
+        seconds = 0.0f;
+    }
  //   printf("seconds: %f \n", seconds);
     if (fabs(0.0f - seconds) < 0.0000001f){
        // printf("Zero delay is true \n");
