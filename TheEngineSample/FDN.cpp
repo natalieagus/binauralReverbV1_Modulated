@@ -16,6 +16,7 @@ void  FDN::processIFretlessBuffer(float* input, size_t numFrames, float* outputL
     
     if (parameterNeedsUpdate){
         setParameterSafe(newParametersFDN);
+        donePrint = false;
         parameterNeedsUpdate = false;
         for (size_t i = 0; i < numFrames; i++){
             processReverb(&zero_f, outputL + i, outputR + i);
@@ -56,7 +57,11 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     // copy output taps to pre-filtered output buffer
     //rwIndices are output taps pointer
     
-    vDSP_vgathra (const_cast<const float**>(rwIndices), 1, outputsPF, 1, numTaps);
+    //modulated code
+    
+    vDSP_vqint(modulatedDelayBuffers,readIndices,1,outputsPF,1,numTaps, numTaps);
+    
+ //   vDSP_vgathra (const_cast<const float**>(rwIndices), 1, outputsPF, 1, numTaps);
     
     // scale the output taps according to the feedBackTapGains
     vDSP_vmul(feedbackTapGains, 1, outputsPF, 1, outputsPF, 1, numTaps);
@@ -180,10 +185,17 @@ inline void FDN::processReverb(float* pInput, float* pOutputL, float* pOutputR)
     
     // feedback the mixed audio into the tank, shifting the feedback path over to the next unit
     size_t j;//,k;
-    for (j = DELAYSPERUNIT; j < numDelays; j++) *(rwIndices[j+ numUncirculatedTaps]) = inputs[j-DELAYSPERUNIT];
-    for (j = 0;j<DELAYSPERUNIT; j++) *(rwIndices[j+ numUncirculatedTaps]) = inputs[j+numDelays-DELAYSPERUNIT];
-    //for (j = 0; j < numDelays; j++) *(rwIndices[j+ numUncirculatedTaps]) = inputs[j];
+//    for (j = DELAYSPERUNIT; j < numDelays; j++){
+//        *(rwIndices[j+ numUncirculatedTaps]) = inputs[j-DELAYSPERUNIT];
+//    }
+//    for (j = 0;j<DELAYSPERUNIT; j++){
+//        *(rwIndices[j+ numUncirculatedTaps]) = inputs[j+numDelays-DELAYSPERUNIT];
+//    }
+    for (j = 0; j < numDelays; j++) {
+        modulatedDelayBuffers[writeIndices[j]] = inputs[j]; 
+    }
     
+
     incrementIndices();
 }
 
@@ -254,54 +266,76 @@ void FDN::initialise(bool powerSaveMode){
     parametersFDN =  Parameter();
     setParameterSafe(parametersFDN);
     
+    resetModulatedReadIndicesAndDelay();
+    resetDelay(totalDelayTime);
     
     
 }
-
-void FDN::resetReadIndices(){
-    // set start, end indices for the first delay in the feedback tank
-    rwIndices[numUncirculatedTaps] = startIndices[numUncirculatedTaps] = (float*)delayBuffers;
-    endIndices[numUncirculatedTaps] = startIndices[numUncirculatedTaps] + delayTimes[numUncirculatedTaps];
-    
-    //print delay times
-    for (int i = 0; i < numTaps;i++){
-        if (delayTimes[i] < 1){
-            delayTimes[i] = 10;
-        }
-    };
-    
-    // set start / end indices for the second feedback delay tap onwards
-    for (int i = numUncirculatedTaps + 1; i < numTaps; i++){
-        rwIndices[i] = startIndices[i] = startIndices[i-1] + delayTimes[i-1];
-        endIndices[i] = startIndices[i] + delayTimes[i];
+void FDN::resetModulatedReadIndicesAndDelay(){
+    printf("Max DelayTime : %d\n", maxDelayTime);
+    printf("maxdelay buffer: %d \n", delayBufferSizeForOneDelay);
+    //set writeIndexes & readIndexes
+    for (int i = 0; i<numTaps; i++){
+        writeIndices[i] = (i) * delayBufferSizeForOneDelay + maxDelayTime - 1;
+        readIndices[i] = writeIndices[i] - delayTimes[i];
+        printf("i : %d, Write indices: %d, readIndices: %f delayLength : %d difference : %f\n", i, writeIndices[i], readIndices[i], delayTimes[i], (writeIndices[i] - readIndices[i]));
     }
     
-    /*
-    // set times for the uncirculated taps
-    //Uncirculated taps are: delayTimes[0,....,numUncirculatedTaps-1, ..., numDelay-1]
-    int firstMultiTappedDelayIdx = numUncirculatedTaps;
-    for (int i = 0; i < numUncirculatedTaps; i++){
-        // find the index of the delay line on which this tap operates
-        int delayLineIdx = (i%numDelays)+firstMultiTappedDelayIdx;
-        // printf("delayLine Idx: %d\n", delayLineIdx);
-        // uncirculated delay times can not be longer than the circulated time on the same delay line
-        if(delayTimes[i] > delayTimes[delayLineIdx]){
-            int old = delayTimes[i];
-            // usually, the taps time won't exceed the delay time but the longest one might so, we generate a random time for it.
-            updateRand();
-            int delayLineLength = delayTimes[delayLineIdx];
-            delayTimes[i] = (rand % (delayLineLength-1)) + 1;
-            printf("ERROR! Delay uncirculated > delay circulated. Need to sort. delayTimes[%d]: %d delayTimes[delayLineidx]: %d, new delay line: %d\n", i, old, delayTimes[delayLineIdx], delayTimes[i]);
-        }
-        
-        startIndices[i] = startIndices[delayLineIdx];
-        endIndices[i] = endIndices[delayLineIdx];
-        rwIndices[i] = endIndices[i] - delayTimes[i];
-    }
-     */
+    writeNextWrap = 0;
+    readNextWrap = 0;
     
-    samplesUntilNextWrap = 0; // Initially, we trigger an unncecssary wrap operation to calculate the number of samples until the next actual wrap
+    
+    for (int i = 0; i<numTaps; i++){
+        assert(delayTimes[i] <= maxDelayTime);
+    }
 }
+//void FDN::resetReadIndices(){
+//    // set start, end indices for the first delay in the feedback tank
+//    rwIndices[numUncirculatedTaps] = startIndices[numUncirculatedTaps] = (float*)delayBuffers;
+//    endIndices[numUncirculatedTaps] = startIndices[numUncirculatedTaps] + delayTimes[numUncirculatedTaps];
+//    
+//    
+//    for (int i = 0; i < numTaps;i++){
+//        if (delayTimes[i] < 1){
+//            delayTimes[i] = 10;
+//        }
+//    };
+//    
+//    // set start / end indices for the second feedback delay tap onwards
+//    for (int i = numUncirculatedTaps + 1; i < numTaps; i++){
+//        rwIndices[i] = startIndices[i] = startIndices[i-1] + delayTimes[i-1];
+//        endIndices[i] = startIndices[i] + delayTimes[i];
+//    }
+//    
+//    
+//
+//    
+//    /*
+//    // set times for the uncirculated taps
+//    //Uncirculated taps are: delayTimes[0,....,numUncirculatedTaps-1, ..., numDelay-1]
+//    int firstMultiTappedDelayIdx = numUncirculatedTaps;
+//    for (int i = 0; i < numUncirculatedTaps; i++){
+//        // find the index of the delay line on which this tap operates
+//        int delayLineIdx = (i%numDelays)+firstMultiTappedDelayIdx;
+//        // printf("delayLine Idx: %d\n", delayLineIdx);
+//        // uncirculated delay times can not be longer than the circulated time on the same delay line
+//        if(delayTimes[i] > delayTimes[delayLineIdx]){
+//            int old = delayTimes[i];
+//            // usually, the taps time won't exceed the delay time but the longest one might so, we generate a random time for it.
+//            updateRand();
+//            int delayLineLength = delayTimes[delayLineIdx];
+//            delayTimes[i] = (rand % (delayLineLength-1)) + 1;
+//            printf("ERROR! Delay uncirculated > delay circulated. Need to sort. delayTimes[%d]: %d delayTimes[delayLineidx]: %d, new delay line: %d\n", i, old, delayTimes[delayLineIdx], delayTimes[i]);
+//        }
+//        
+//        startIndices[i] = startIndices[delayLineIdx];
+//        endIndices[i] = endIndices[delayLineIdx];
+//        rwIndices[i] = endIndices[i] - delayTimes[i];
+//    }
+//     */
+//    
+//    samplesUntilNextWrap = 0; // Initially, we trigger an unncecssary wrap operation to calculate the number of samples until the next actual wrap
+//}
 
 // see: http://software.intel.com/en-us/articles/fast-random-number-generator-on-the-intel-pentiumr-4-processor/
 // rather than returning an output, this function updates a class variable so that we only have to generate 1 random number for each sample.
@@ -336,37 +370,127 @@ void FDN::resetDelay(int totalDelayTime)
     memset(outputsAF, 0, sizeof(float) * numTaps);
     
     memset(z1, 0, sizeof(float) * numDelays); //DF2
-    memset(z1a, 0, sizeof(float) * numDelays); //DF1
-    memset(z1b, 0, sizeof(float) * numDelays); //DF1
+
     
     randomSeed = 0;
+    
+
 }
 
 inline void FDN::incrementIndices(){
-    for (int i = 0; i < numTaps; i++) {
-        float** rwIndex = rwIndices + i;
-        // increment
-        (*rwIndex)++;
-        // wrap around back to the beginning if we're off the end
-        //if ((*rwIndex) >= endIndices[i]) (*rwIndex) = startIndices[i];
-    }
-    samplesUntilNextWrap--;
     
-    // if any pointer is at the end of the buffer, check all pointers and wrap back to the beginning where necessary
-    if (samplesUntilNextWrap <= 0) {
-        samplesUntilNextWrap = LONG_MAX;
-        for (long i = 0; i< numTaps; i++){
-            float** rwIndex = rwIndices + i;
-            float** endIndex = endIndices + i;
-            
-            // wrap all pointers that need to be wrapped
-            if ((*rwIndex) >= (*endIndex)) (*rwIndex) = startIndices[i];
-            
-            // find the distance until the next pointer needs to wrap
-            long iThDistanceToEnd = (*endIndex) - (*rwIndex);
-            if (iThDistanceToEnd < samplesUntilNextWrap) samplesUntilNextWrap = iThDistanceToEnd;
+
+    float difference[numTaps];
+    for (int i = 0; i<numTaps; i++){
+        float WI = writeIndices[i];
+        float RI = readIndices[i];
+    
+    //    printf("i : %d WI : %d RI %f \n", i, writeIndices[i], readIndices[i]);
+        //get their difference
+        if (float(WI) >= RI) {
+            difference[i] = fabsf(WI - RI);
+        }
+        else if (RI > float(WI)){
+            difference[i] = ((delayBufferSizeForOneDelay * i) + maxDelayTime - RI) + (WI - (delayBufferSizeForOneDelay * i));
         }
     }
+    
+    done = true;
+    for(int i = 0; i<numTaps; i++){
+        //check if their difference is desired
+        if (fabsf(difference[i] - delayTimes[i]) <= 0.005f){
+
+            if (difference[i] < delayTimes[i]){
+                readIndices[i] = floorf(readIndices[i]);
+               // printf( " %d ReadIndices : %f difference %f writeIndices : %d  \n", i, readIndices[i], difference[i], writeIndices[i]);
+            }
+            else
+            {
+                readIndices[i] = ceilf(readIndices[i]);
+                //printf( " %d ReadIndices : %f difference %f writeIndices : %d  \n", i, readIndices[i], difference[i], writeIndices[i]);
+            }
+            
+            readIndices[i] += 1.0f;
+            writeIndices[i] += 1;
+
+            
+           // printf(" i : %d, readIndices : %f writeIndices : %d \n", i, readIndices[i], writeIndices[i]);
+        }
+        else{
+            done = false;
+        //    printf("i %d, difference : %f, desired : %d writeIndices : %d readIndices : %f \n", i, difference[i], delayTimes[i], writeIndices[i], readIndices[i]);
+            
+           // printf("i : %d \n", i);
+           // printf("Difference is : %f \n", difference);
+
+            //check increase or decrease
+            if (delayTimes[i] > difference[i]){
+              //  printf("increasing delay from : %f to %d \n", difference[i], delayTimes[i]);
+                readIndices[i] += 0.9950000f;
+                writeIndices[i] += 1;
+            }
+            else{
+              //  printf("decreasing delay from : %f to %d \n", difference[i], delayTimes[i]);
+                readIndices[i] += 1.00500000f;
+                writeIndices[i] += 1;
+            }
+            updateRand();
+            feedbackTapGains[i] = gain(parametersFDN.RT60, difference[i]);
+        }
+    }
+    
+    if (done & !donePrint){
+        printf("DONE UPDATING");
+        donePrint = true;
+    }
+
+    for(int i = 0; i<numTaps; i++){
+      //  printf(" i %d RI : %f WI :%d \n", i, readIndices[i], writeIndices[i]);
+    //check for write indices wrapping
+    if (writeIndices[i] >= (delayBufferSizeForOneDelay*(i+1))){
+       // printf("i : %d writeIndices wrapped %d %d\n", i, writeIndices[i], (delayBufferSizeForOneDelay*(i+1)) );
+        writeIndices[i] = delayBufferSizeForOneDelay * i + INTERPOLATION_ORDER;
+        //copy
+        modulatedDelayBuffers[i*delayBufferSizeForOneDelay] = modulatedDelayBuffers[(i+1) * delayBufferSizeForOneDelay -2];
+        modulatedDelayBuffers[i*delayBufferSizeForOneDelay + 1] = modulatedDelayBuffers[(i+1) * delayBufferSizeForOneDelay - 1];
+       // printf("write indices now : %d \n", writeIndices[i]);
+    }
+    //check read indices for wrapping
+    if (readIndices[i] >= ((delayBufferSizeForOneDelay*i) + maxDelayTime)){
+      //  printf("i : %d readIndices wrapped %f %d\n", i, readIndices[i], ((delayBufferSizeForOneDelay*i) + maxDelayTime));
+        readIndices[i] = delayBufferSizeForOneDelay * i;
+       // printf("read indices now : %f \n", readIndices[i]);
+    }
+       // printf("RI : %f WI :%d \n",readIndices[i], writeIndices[i]);
+    }
+
+    
+    
+//    for (int i = 0; i < numTaps; i++) {
+//        float** rwIndex = rwIndices + i;
+//        // increment
+//        (*rwIndex)++;
+//        // wrap around back to the beginning if we're off the end
+//        //if ((*rwIndex) >= endIndices[i]) (*rwIndex) = startIndices[i];
+//    }
+//    
+//    samplesUntilNextWrap--;
+//    
+//    // if any pointer is at the end of the buffer, check all pointers and wrap back to the beginning where necessary
+//    if (samplesUntilNextWrap <= 0) {
+//        samplesUntilNextWrap = LONG_MAX;
+//        for (long i = 0; i< numTaps; i++){
+//            float** rwIndex = rwIndices + i;
+//            float** endIndex = endIndices + i;
+//            
+//            // wrap all pointers that need to be wrapped
+//            if ((*rwIndex) >= (*endIndex)) (*rwIndex) = startIndices[i];
+//            
+//            // find the distance until the next pointer needs to wrap
+//            long iThDistanceToEnd = (*endIndex) - (*rwIndex);
+//            if (iThDistanceToEnd < samplesUntilNextWrap) samplesUntilNextWrap = iThDistanceToEnd;
+//        }
+//    }
 }
 
 // Multiplies the decay rate for high Frequencies
@@ -438,6 +562,7 @@ void FDN::setParameterSafe(Parameter params){
     // this is required to keep the mixing matrices unitary
     matrixAttenuation = 1.0/sqrt((float)DELAYSPERUNIT);
     
+    
     printf("Configuring Room Ray Model.. \n");
     configureRoomRayModel();
     
@@ -476,23 +601,27 @@ void FDN::setParameterSafe(Parameter params){
     setFilters();
     
     
-    int totalDelayTime = 0;
-    for(int i = numUncirculatedTaps; i < numTaps; i++) totalDelayTime += delayTimes[i];
-    resetDelay(totalDelayTime);
-    
- 
     printf("Printing Parameters: \n");
     
     printf("Listener loc : %f %f \n", parametersFDN.listenerLoc.x, parametersFDN.listenerLoc.y);
+    
     for (int i = 0 ; i < numTaps ; i++){
         printf("Index : %d, delay : %d, inputGain : %f, outputGain: %f, bouncePoint :x  %f y %f z %f\n",i, delayTimes[i], inputGains[i], outputGains[i], roomBouncePoints[i].x, roomBouncePoints[i].y, roomBouncePoints[i].z);
-        if (parametersFDN.listenerLoc.distance(roomBouncePoints[i])<0.5f){
-            printf ("YES\n");
+
+        if (delayTimes[i] <= 1){
+            delayTimes[i] = 10;
         }
     }
+    maxDelayTime = MAX_DELAY_TIME;
+    delayBufferSizeForOneDelay = maxDelayTime + INTERPOLATION_ORDER;
+    int totalDelayTime = 0;
+    for(int i = numUncirculatedTaps; i < numTaps; i++) totalDelayTime += delayTimes[i];
+   // resetDelay(totalDelayTime);
+    
+
     
     
-    resetReadIndices();
+  //  resetReadIndices();
     
     
     // set high-frequency attenuation
@@ -924,5 +1053,6 @@ inline void FDN::sortDelayTimes(){
 }
 */
 
+//TODO : MODULATE DIRECT DELAY TOO
 
 

@@ -11,8 +11,8 @@ FDN: a feedback delay network reverberator
 #define DELAYSPERUNIT 4
 #define UNCIRCULATEDTAPSSMALL (2*DELAYUNITSSMALL*DELAYSPERUNIT)
 //#define UNCIRCULATEDTAPSSTD 2*DELAYUNITSSTD*DELAYSPERUNIT
-#define UNCIRCULATEDTAPSSTD 0
-#define EXTRADELAYS 4
+#define UNCIRCULATEDTAPSSTD 0 //dont put this value more than 0
+#define EXTRADELAYS 2
 #define FLOORUNITS 4 //4 * FLOORUNITS >= FLOORDELAYS
 #define DELAYUNITSSTD (4 + EXTRADELAYS + FLOORUNITS)
 #define NUMDELAYSSTD (DELAYUNITSSTD * DELAYSPERUNIT)  
@@ -25,7 +25,9 @@ FDN: a feedback delay network reverberator
 //#define CENTIMETRESTOMETRES 0.01f
 //#define CENTIMETRESTOMETRESSQ CENTIMETRESTOMETRES*CENTIMETRESTOMETRES
 #define CHANNELS 8
-
+#define INTERPOLATION_ORDER 2
+#define MAX_DELAY_TIME 800
+#define MAX_DELAY_BUFFER_SIZE (INTERPOLATION_ORDER + MAX_DELAY_TIME) * NUMTAPSSTD
 
 #import <Accelerate/Accelerate.h>
 #import "FirstOrderFilter.h"
@@ -53,6 +55,9 @@ public:
 
     void setParameter(Parameter params);
     bool parameterNeedsUpdate;
+
+        bool done = false;
+    bool donePrint = false;
 
 protected:
     
@@ -116,11 +121,23 @@ protected:
     //process the fdntankout[channels]
     void filterChannels(float fdnTankOut[CHANNELS], float directRay[2], float fdnTankOutLeft[CHANNELS], float fdnTankOutRight[CHANNELS]);
     
- 
+    //modulated delays
+    float modulatedDelayBuffers[MAX_DELAY_BUFFER_SIZE];
+    int maxDelayTime;
+    int delayBufferSizeForOneDelay;
+    float readIndices[NUMTAPSSTD];
+    int writeIndices[NUMTAPSSTD];
+    void resetModulatedReadIndicesAndDelay();
+    int writeNextWrap;
+    int readNextWrap;
+    
     // delay buffers
 	//float delayBuffers [MAXBUFFERSIZE];
     float* delayBuffers;
     int delayTimes [NUMTAPSSTD];
+    
+
+    
     int totalDelayTime;
     int numDelays, delayUnits, numTaps, numUncirculatedTaps;
 	//float feedbackAttenuation[NUMDELAYSSTANDARD];
@@ -130,10 +147,10 @@ protected:
     // we put all the indices in one array, then access them via pointers.
     // Keeping all indices in one array allows us to increment all of them with a single
     // optomised vector-scalar addition.
-    float* rwIndices[NUMTAPSSTD];
-    float* startIndices[NUMTAPSSTD];
-    float* endIndices[NUMTAPSSTD];
-    long samplesUntilNextWrap;
+  //  float* rwIndices[NUMTAPSSTD];
+  //  float* startIndices[NUMTAPSSTD];
+  //  float* endIndices[NUMTAPSSTD];
+  //  long samplesUntilNextWrap;
     //int writeIndex;
 	//int* outTapReadIndices;
     //int* endIndex;

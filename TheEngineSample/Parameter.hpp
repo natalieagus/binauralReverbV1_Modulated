@@ -22,7 +22,7 @@
 #define INITIALSOUNDY (2.0f/3.0f)
 #define INITIALRT60 0.4f
 #define RADIUSOFHEAD 0.08f //8cm radius of head
-#define ROOMSIZE 30.f //30 metres max
+#define ROOMSIZE 20.f //20 metres max
 #define ROOMCEILING 2.f
 #define INITIALDIRECTGAIN 1.f ///(4.f*M_PI);
 #define INITIALREVERBGAIN 1.f ///(4.f*M_PI);

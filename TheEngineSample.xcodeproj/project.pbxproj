@@ -11,6 +11,7 @@
 		2C3C6C551C21618F004A63A8 /* acapellafemale.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C531C21618F004A63A8 /* acapellafemale.wav */; };
 		2C3C6C5A1C2163E2004A63A8 /* acapellafemale2.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2C3C6C591C2163E2004A63A8 /* acapellafemale2.wav */; };
 		2C7CD63C1BE0C920000F26E2 /* Parameter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */; };
+		2CB78C061C7469DC00F45EB2 /* Reverberation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CB78C041C7469DC00F45EB2 /* Reverberation.cpp */; };
 		2CCA78F81C227A13006B8D46 /* fullSpectrumImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */; };
 		2CCA78F91C227A13006B8D46 /* lowpassFilteredImpulse.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */; };
 		2CD0C0A31BE7A9E1009D9971 /* SecondOrderFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */; };
@@ -86,6 +87,8 @@
 		2C3C6C591C2163E2004A63A8 /* acapellafemale2.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = acapellafemale2.wav; sourceTree = "<group>"; };
 		2C7CD63A1BE0C920000F26E2 /* Parameter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parameter.cpp; sourceTree = "<group>"; };
 		2C7CD63B1BE0C920000F26E2 /* Parameter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Parameter.hpp; sourceTree = "<group>"; };
+		2CB78C041C7469DC00F45EB2 /* Reverberation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reverberation.cpp; sourceTree = "<group>"; };
+		2CB78C051C7469DC00F45EB2 /* Reverberation.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Reverberation.hpp; sourceTree = "<group>"; };
 		2CCA78F61C227A13006B8D46 /* fullSpectrumImpulse.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = fullSpectrumImpulse.wav; sourceTree = "<group>"; };
 		2CCA78F71C227A13006B8D46 /* lowpassFilteredImpulse.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = lowpassFilteredImpulse.wav; sourceTree = "<group>"; };
 		2CD0C0A11BE7A9E1009D9971 /* SecondOrderFilter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SecondOrderFilter.cpp; sourceTree = "<group>"; };
@@ -213,6 +216,8 @@
 				3ACBFFA11B9945370077484B /* MultiLevelBiQuadFilter.h */,
 				3A9464251BA6BB1F00818778 /* QuadraturePhaseEnvelopeFollower.cpp */,
 				3A9464261BA6BB1F00818778 /* QuadraturePhaseEnvelopeFollower.h */,
+				2CB78C041C7469DC00F45EB2 /* Reverberation.cpp */,
+				2CB78C051C7469DC00F45EB2 /* Reverberation.hpp */,
 				2C2707DF1BDF31C900EFD5CD /* DoubleBufferedReverb.cpp */,
 				2C2707E01BDF31C900EFD5CD /* DoubleBufferedReverb.h */,
 				3A8EFDE71BE0850E00EBA82D /* Point2d.cpp */,
@@ -458,6 +463,7 @@
 				3ACBFFA21B9945370077484B /* MultiLevelBiQuadFilter.cpp in Sources */,
 				4C0C249D1599FADD00D23E13 /* ViewController.mm in Sources */,
 				4C0C24CC159A246500D23E13 /* TPOscilloscopeLayer.m in Sources */,
+				2CB78C061C7469DC00F45EB2 /* Reverberation.cpp in Sources */,
 				4C7C680916F1609800721E60 /* AEExpanderFilter.m in Sources */,
 				3ACBFF9C1B9941530077484B /* BiQuadFilter.cpp in Sources */,
 				4C7C680A16F1609800721E60 /* AELimiter.m in Sources */,

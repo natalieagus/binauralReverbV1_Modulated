@@ -12,11 +12,12 @@
 #import "AEPlaythroughChannel.h"
 #import "AEExpanderFilter.h"
 #import "AELimiterFilter.h"
-
+#import "Reverberation.hpp"
 #import <QuartzCore/QuartzCore.h>
 #import "FDN.h"
 #import "MultiLevelBiQuadFilter.h"
 #import "DoubleBufferedReverb.h"
+
 #include <math.h>
 
 static int kInputChannelsChangedContext;
@@ -27,7 +28,8 @@ static int kInputChannelsChangedContext;
 @interface ViewController () {
     AudioFileID _audioUnitFile;
     AEChannelGroupRef _group;
-    DoubleBufferedReverb Reverb;
+   // DoubleBufferedReverb Reverb;
+    Reverberation Reverb;
     MultiLevelBiQuadFilter equalizer;
     UIButton *Listener;
     UIButton *SoundSource;
@@ -48,6 +50,8 @@ static int kInputChannelsChangedContext;
     
     float xLloc;
     float yLloc;
+    
+
     
 
 }
@@ -78,6 +82,8 @@ static int kInputChannelsChangedContext;
 - (id)initWithAudioController:(AEAudioController*)audioController {
     if ( !(self = [super initWithStyle:UITableViewStyleGrouped]) ) return nil;
     
+   // done = true;
+    
     reverbOn = true;
     directOn = true;
     
@@ -94,6 +100,7 @@ static int kInputChannelsChangedContext;
     autoSoundMove = false;
     angle = 0.0f;
         self.soundSourceTimer = [NSTimer scheduledTimerWithTimeInterval:5.0 target:self selector:@selector(moveSoundSource:) userInfo:nil repeats:YES];
+
     
     xLloc = self.tableView.bounds.size.width/2-25;
     yLloc = 2*self.tableView.bounds.size.width/3;
@@ -535,6 +542,7 @@ static int kInputChannelsChangedContext;
 }
 
 - (void) listenerTouched:(UIButton*) sender withEvent:(UIEvent*) event{
+    
     CGPoint point = [[[event allTouches]anyObject] locationInView:self.tableView];
     point = [sender.superview convertPoint:point fromView:self.tableView];
 
@@ -551,6 +559,7 @@ static int kInputChannelsChangedContext;
         point.y = self.tableView.bounds.size.width;
     }
     sender.center = point;
+        
     
     if (ssLock){
         CGPoint ssP = CGPointMake(point.x + xDiff, point.y + yDiff);
@@ -568,9 +577,12 @@ static int kInputChannelsChangedContext;
         }
         SoundSource.center = ssP;
     }
+        
+    
 }
 
 - (void) listenerTouchedEnds:(UIButton*) sender withEvent:(UIEvent*) event{
+
     CGPoint p = sender.center;
     
     xLloc = p.x;
@@ -593,10 +605,12 @@ static int kInputChannelsChangedContext;
         float loc1[2] = {x1,y1};
         Reverb.setSoundAndListenerLocation(loc, loc1);
     }
+    
+
 }
 
 - (void) soundSourceTouchedEnds:(UIButton*) sender withEvent:(UIEvent*) event{
-    
+
     if (!ssLock){
     CGPoint p = sender.center;
     
@@ -612,11 +626,15 @@ static int kInputChannelsChangedContext;
     
     Reverb.setSoundLocation(loc);
      //   printf("Sound location is now : %f %f \n", loc[0], loc[1]);
+
     }
+    
+    
+
 }
 
 - (void) soundSourceTouched:(UIButton*) sender withEvent:(UIEvent* )event{
-    
+
     if (!ssLock){
     CGPoint point = [[[event allTouches]anyObject] locationInView:self.tableView];
 
@@ -635,6 +653,7 @@ static int kInputChannelsChangedContext;
     }
     sender.center = point;
     }
+    
 }
 - (CGFloat) tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -709,21 +728,27 @@ static int kInputChannelsChangedContext;
 }
 
 -(void)roomSizeChanged:(UISlider*)slider {
+
     Reverb.setRoomSize(slider.value);
     printf("Room size is now : %f \n", slider.value);
     rSize = slider.value;
+
 }
 
 - (void) rt60SizeChanged: (UISlider*)slider{
+
     Reverb.setRT60(slider.value);
     printf("RT60 is now : %f \n", slider.value);
     rt60Val = slider.value;
+
 }
 
 - (void) widthRatioSizeChanged: (UISlider*) slider{
+
     Reverb.setWidthRatio(slider.value);
     printf("Width Ratio is now : %f \n", slider.value);
     wRatio = slider.value;
+
 }
 
 
@@ -814,6 +839,7 @@ static inline float translate(float val, float min, float max) {
 float soundSourceLoc[10][2] = {{0.2, 0.9},{0.4,1.0},{0.9, 0.2},{0.3,0.3},{0.7,0.7},{0.1,0.8},{0,0},{1,1},{0.8,0.4},{0.3,0.9}};
 
 int indexSoundSource = 0;
+
 
 
 - (void) moveSoundSource: (NSTimer*) timer{
