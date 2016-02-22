@@ -268,6 +268,7 @@ void FDN::initialise(bool powerSaveMode){
     
     resetModulatedReadIndicesAndDelay();
     resetDelay(totalDelayTime);
+    resetTapAttenuation(parametersFDN.RT60);
     
     
 }
@@ -426,12 +427,12 @@ inline void FDN::incrementIndices(){
             //check increase or decrease
             if (delayTimes[i] > difference[i]){
               //  printf("increasing delay from : %f to %d \n", difference[i], delayTimes[i]);
-                readIndices[i] += 0.9950000f;
+                readIndices[i] += 0.95000f;
                 writeIndices[i] += 1;
             }
             else{
               //  printf("decreasing delay from : %f to %d \n", difference[i], delayTimes[i]);
-                readIndices[i] += 1.00500000f;
+                readIndices[i] += 1.0500000f;
                 writeIndices[i] += 1;
             }
             updateRand();
@@ -629,7 +630,7 @@ void FDN::setParameterSafe(Parameter params){
     
     setHFDecayMultiplier(2000.f,3.0f,parametersFDN.RT60);
     
-    resetTapAttenuation(parametersFDN.RT60);
+
     
     float totalGleft = 0.0f;
     float totalGright = 0.0f;
