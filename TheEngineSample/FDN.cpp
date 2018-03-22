@@ -427,12 +427,12 @@ inline void FDN::incrementIndices(){
             //check increase or decrease
             if (delayTimes[i] > difference[i]){
               //  printf("increasing delay from : %f to %d \n", difference[i], delayTimes[i]);
-                readIndices[i] += 0.95000f;
+                readIndices[i] += 0.f;
                 writeIndices[i] += 1;
             }
             else{
               //  printf("decreasing delay from : %f to %d \n", difference[i], delayTimes[i]);
-                readIndices[i] += 1.0500000f;
+                readIndices[i] += 2.0f;
                 writeIndices[i] += 1;
             }
             updateRand();
@@ -446,7 +446,7 @@ inline void FDN::incrementIndices(){
     }
 
     for(int i = 0; i<numTaps; i++){
-      //  printf(" i %d RI : %f WI :%d \n", i, readIndices[i], writeIndices[i]);
+    //    printf(" i %d RI : %f WI :%d \n", i, readIndices[i], writeIndices[i]);
     //check for write indices wrapping
     if (writeIndices[i] >= (delayBufferSizeForOneDelay*(i+1))){
        // printf("i : %d writeIndices wrapped %d %d\n", i, writeIndices[i], (delayBufferSizeForOneDelay*(i+1)) );
@@ -465,33 +465,7 @@ inline void FDN::incrementIndices(){
        // printf("RI : %f WI :%d \n",readIndices[i], writeIndices[i]);
     }
 
-    
-    
-//    for (int i = 0; i < numTaps; i++) {
-//        float** rwIndex = rwIndices + i;
-//        // increment
-//        (*rwIndex)++;
-//        // wrap around back to the beginning if we're off the end
-//        //if ((*rwIndex) >= endIndices[i]) (*rwIndex) = startIndices[i];
-//    }
-//    
-//    samplesUntilNextWrap--;
-//    
-//    // if any pointer is at the end of the buffer, check all pointers and wrap back to the beginning where necessary
-//    if (samplesUntilNextWrap <= 0) {
-//        samplesUntilNextWrap = LONG_MAX;
-//        for (long i = 0; i< numTaps; i++){
-//            float** rwIndex = rwIndices + i;
-//            float** endIndex = endIndices + i;
-//            
-//            // wrap all pointers that need to be wrapped
-//            if ((*rwIndex) >= (*endIndex)) (*rwIndex) = startIndices[i];
-//            
-//            // find the distance until the next pointer needs to wrap
-//            long iThDistanceToEnd = (*endIndex) - (*rwIndex);
-//            if (iThDistanceToEnd < samplesUntilNextWrap) samplesUntilNextWrap = iThDistanceToEnd;
-//        }
-//    }
+
 }
 
 // Multiplies the decay rate for high Frequencies

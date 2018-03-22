@@ -467,7 +467,7 @@ static int kInputChannelsChangedContext;
                     cell.textLabel.text= @"RT60 Value";
                     UISlider *rt60Slider = [[UISlider alloc] initWithFrame:CGRectMake(0, 0, 300, 40)];
                     rt60Slider.minimumValue = 0.2f;
-                    rt60Slider.maximumValue = 10.0f;
+                    rt60Slider.maximumValue = 3.0f;
                     rt60Slider.value = rt60Val;
                     [rt60Slider setContinuous:NO];
                     [rt60Slider addTarget:self action:@selector(rt60SizeChanged:) forControlEvents:UIControlEventValueChanged];

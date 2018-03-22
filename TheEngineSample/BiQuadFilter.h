@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 class BiQuadFilter {
+    
 private:
     float za1, za2, zb1, zb2;
     float a1, a2, b0, b1, b2;
@@ -24,6 +25,7 @@ public:
     void setBandPass(float fc, float bw);
     void setLowPass(float fc);
     void setHighPass(float fc);
+    
 };
 
 #endif /* defined(__ViolinModel__BiQuadFilter__) */
